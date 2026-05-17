@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "c36340f150606b623ee2208322592dac",
+  "type": "issued",
+  "number": "2024001",
+  "vatId": "CZ00000001",
+  "name": "Firma Alfa s.r.o.",
+  "taxableDate": "2024-05-10",
+  "description": "Prodej kancelářských potřeb",
+  "price": 10000,
+  "vatValue": 2100,
+  "id": "57d52ba501931b15f8197611491c47ed"
+}

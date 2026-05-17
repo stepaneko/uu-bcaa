@@ -1,0 +1,335 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TaxPayer & Invoice API",
+    "description": "API for managing taxpayers and their issued or received invoices, including tax exports.",
+    "version": "1.2.0"
+  },
+  "tags": [
+    {
+      "name": "TaxPayer",
+      "description": "Operations for managing taxpayers"
+    },
+    {
+      "name": "Invoice",
+      "description": "Operations for managing invoices"
+    },
+    {
+      "name": "Export",
+      "description": "Operations for exporting tax documents"
+    }
+  ],
+  "paths": {
+    "/taxpayers": {
+      "get": {
+        "tags": ["TaxPayer"],
+        "summary": "Get list of taxpayers",
+        "operationId": "getTaxPayersList",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of the list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TaxPayer" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["TaxPayer"],
+        "summary": "Create a new taxpayer",
+        "operationId": "createTaxPayer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TaxPayer" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Taxpayer successfully created" }
+        }
+      }
+    },
+    "/taxpayers/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["TaxPayer"],
+        "summary": "Get taxpayer details by ID",
+        "operationId": "getTaxPayerById",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/TaxPayer" } }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["TaxPayer"],
+        "summary": "Update an existing taxpayer",
+        "operationId": "updateTaxPayer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/TaxPayer" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated successfully" }
+        }
+      },
+      "delete": {
+        "tags": ["TaxPayer"],
+        "summary": "Delete a taxpayer",
+        "operationId": "deleteTaxPayer",
+        "responses": {
+          "204": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/invoices": {
+      "get": {
+        "tags": ["Invoice"],
+        "summary": "Get list of invoices",
+        "operationId": "getInvoicesList",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Invoice" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Invoice"],
+        "summary": "Create a new invoice",
+        "operationId": "createInvoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "Invoice created successfully" }
+        }
+      }
+    },
+    "/invoices/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Invoice"],
+        "summary": "Get invoice details by ID",
+        "operationId": "getInvoiceById",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Invoice"],
+        "summary": "Update an existing invoice",
+        "operationId": "updateInvoice",
+        "responses": { "200": { "description": "Updated successfully" } }
+      },
+      "delete": {
+        "tags": ["Invoice"],
+        "summary": "Delete an invoice",
+        "responses": { "204": { "description": "Deleted successfully" } }
+      }
+    },
+    "/export/dp": {
+      "get": {
+        "tags": ["Export"],
+        "summary": "Export VAT return (DPH) to XML",
+        "description": "Generates an XML file for VAT return based on dphdp3_epo2.xsd.",
+        "operationId": "exportDphXml",
+        "parameters": [
+          {
+            "name": "taxPayerId",
+            "in": "query",
+            "required": true,
+            "description": "Identifier of the taxpayer.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "description": "Tax period - month.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 12 }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "description": "Tax period - year.",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful generation of VAT return XML",
+            "content": {
+              "application/xml": {
+                "schema": { "type": "string", "format": "xml" }
+              }
+            }
+          },
+          "400": { "description": "Invalid input parameters" },
+          "404": { "description": "Taxpayer or data not found" },
+          "500": { "description": "XML generation or validation failed" }
+        }
+      }
+    },
+    "/export/kh": {
+      "get": {
+        "tags": ["Export"],
+        "summary": "Export VAT control statement (KH) to XML",
+        "description": "Generates an XML file for VAT control statement based on dphkh1_epo2.xsd.",
+        "operationId": "exportKhXml",
+        "parameters": [
+          {
+            "name": "taxPayerId",
+            "in": "query",
+            "required": true,
+            "description": "Identifier of the taxpayer.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "description": "Tax period - month.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 12 }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "description": "Tax period - year.",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful generation of control statement XML",
+            "content": {
+              "application/xml": {
+                "schema": { "type": "string", "format": "xml" }
+              }
+            }
+          },
+          "400": { "description": "Invalid input parameters" },
+          "404": { "description": "Taxpayer or data not found" },
+          "500": { "description": "XML generation or validation failed" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TaxPayer": {
+        "type": "object",
+        "required": ["type", "vatId", "street", "descriptiveNumber", "city", "postalCode", "email", "phoneNumber"],
+        "properties": {
+          "id": { "type": "string", "readOnly": true },
+          "type": { "type": "string", "enum": ["individual", "company"] },
+          "title": { "type": "string", "nullable": true },
+          "firstName": { "type": "string", "nullable": true },
+          "lastName": { "type": "string", "nullable": true },
+          "companyName": { "type": "string", "nullable": true },
+          "vatId": { "type": "string" },
+          "street": { "type": "string" },
+          "descriptiveNumber": { "type": "string" },
+          "referenceNumber": { "type": "string", "nullable": true },
+          "city": { "type": "string" },
+          "postalCode": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "phoneNumber": { "type": "string" }
+        }
+      },
+      "Invoice": {
+        "type": "object",
+        "required": ["taxPayerId", "type", "number", "vatId", "name", "taxableDate", "price", "vatValue"],
+        "properties": {
+          "id": { "type": "string", "readOnly": true },
+          "taxPayerId": { "type": "string" },
+          "type": { "type": "string", "enum": ["issued", "received"] },
+          "number": { "type": "string" },
+          "vatId": { "type": "string" },
+          "name": { "type": "string" },
+          "taxableDate": { "type": "string", "format": "date" },
+          "description": { "type": "string", "nullable": true },
+          "price": { "type": "number", "format": "float" },
+          "vatValue": { "type": "number", "format": "float" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "individual",
+  "title": "Ing.",
+  "firstName": "Jan",
+  "lastName": "Novák",
+  "vatId": "CZ8501011234",
+  "street": "Dlouhá",
+  "descriptiveNumber": "123",
+  "city": "Brno",
+  "postalCode": "60200",
+  "email": "jan.novak@email.cz",
+  "phoneNumber": "+420987654321",
+  "id": "c36340f150606b623ee2208322592dac",
+  "referenceNumber": "2"
+}

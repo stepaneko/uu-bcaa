@@ -1,0 +1,138 @@
+
+curl -X GET "http://localhost:8888/export/dp?taxPayerId=c36340f150606b623ee2208322592dac&year=2024&month=5"
+
+curl -X GET "http://localhost:8888/export/kh?taxPayerId=c36340f150606b623ee2208322592dac&year=2024&month=5"
+
+
+*** Tax payer ***
+
+curl -X GET http://localhost:8888/taxpayer/get?id=c36340f150606b623ee2208322592dac
+
+curl -X GET http://localhost:8888/taxpayers/c36340f150606b623ee2208322592dac -H "accept: application/json"
+
+curl -X GET http://localhost:8888/taxpayer/list
+
+curl -X POST http://localhost:8888/taxpayer/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "individual",
+    "title": "Ing.",
+    "firstName": "Jan",
+    "lastName": "Novák",
+    "vatId": "CZ8501011234",
+    "street": "Krátká",
+    "descriptiveNumber": "456",
+    "city": "Brno",
+    "postalCode": "60200",
+    "email": "jan.novak@email.cz",
+    "phoneNumber": "+420987654321"
+  }'
+  
+curl -X POST http://localhost:8888/taxpayer/update \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "c36340f150606b623ee2208322592dac",
+    "type": "individual",
+    "title": "Ing.",
+    "firstName": "Jan",
+    "lastName": "Novák",
+    "vatId": "CZ8501011234",
+    "street": "Dlouhá",
+    "descriptiveNumber": "456",
+    "referenceNumber": "2",
+    "city": "Brno",
+    "postalCode": "60200",
+    "email": "jan.novak@email.cz",
+    "phoneNumber": "+420987654321"
+  }'
+  
+curl -X PUT http://localhost:8888/taxpayers/c36340f150606b623ee2208322592dac \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "individual",
+    "title": "Ing.",
+    "firstName": "Jan",
+    "lastName": "Novák",
+    "vatId": "CZ8501011234",
+    "street": "Dlouhá",
+    "descriptiveNumber": "123",
+    "referenceNumber": "2",
+    "city": "Brno",
+    "postalCode": "60200",
+    "email": "jan.novak@email.cz",
+    "phoneNumber": "+420987654321"
+}'
+  
+*** Invoices ***
+
+curl -X GET http://localhost:8888/invoice/get?id=57d52ba501931b15f8197611491c47ed
+
+ curl -X POST http://localhost:8888/invoice/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taxPayerId": "c36340f150606b623ee2208322592dac",
+    "type": "issued",
+    "number": "2024001",
+    "vatId": "CZ00000001",
+    "name": "Firma Alfa s.r.o.",
+    "taxableDate": "2024-05-10",
+    "description": "Prodej kancelářských potřeb",
+    "price": 10000.0,
+    "vatValue": 2100.0
+  }'
+  
+  curl -X POST http://localhost:8888/invoice/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taxPayerId": "c36340f150606b623ee2208322592dac",
+    "type": "received",
+    "number": "VF/2024/0123",
+    "vatId": "CZ99999999",
+    "name": "Hlavní Dodavatel a.s.",
+    "taxableDate": "2024-05-15",
+    "description": "Nákup výrobního materiálu",
+    "price": 5000.0,
+    "vatValue": 1050.0
+  }'
+  
+  curl -X POST http://localhost:8888/invoice/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taxPayerId": "c36340f150606b623ee2208322592dac",
+    "type": "issued",
+    "number": "2024002",
+    "vatId": "CZ11223344",
+    "name": "Klient Beta s.r.o.",
+    "taxableDate": "2024-06-05",
+    "description": "IT konzultace a analýza",
+    "price": 15000.0,
+    "vatValue": 3150.0
+  }'
+  
+  curl -X POST http://localhost:8888/invoice/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taxPayerId": "c36340f150606b623ee2208322592dac",
+    "type": "received",
+    "number": "N-2024-06",
+    "vatId": "CZ88888888",
+    "name": "Reality Gamma",
+    "taxableDate": "2024-06-01",
+    "description": "Nájem kancelářských prostor - červen",
+    "price": 20000.0,
+    "vatValue": 4200.0
+  }'
+  
+  curl -X POST http://localhost:8888/invoice/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taxPayerId": "c36340f150606b623ee2208322592dac",
+    "type": "issued",
+    "number": "2024003",
+    "vatId": "CZ55667788",
+    "name": "Firma Delta s.r.o.",
+    "taxableDate": "2024-07-20",
+    "description": "Roční licence k aplikaci EasyVAT",
+    "price": 8000.0,
+    "vatValue": 1680.0
+  }'
