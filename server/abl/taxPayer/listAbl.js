@@ -1,25 +1,28 @@
 const Ajv = require("ajv");
+const addFormats = require("ajv-formats").default;
 const taxPayerDao = require("../../dao/taxPayer-dao.js");
-
-// Načtení kompletního OpenAPI schématu
 const openApiSchema = require("../../schema/openapi/schema.json");
 
-const ajv = new Ajv({ coerceTypes: true, useDefaults: true });
+const ajv = new Ajv();
+addFormats(ajv);
 
 // 1. Nalezení definice parametrů pro operaci GET na cestě /taxpayers
-const operation = openApiSchema.paths["/taxpayers"].get;
-const parameters = operation.parameters || [];
+const pathItem = openApiSchema.paths["/taxpayers"];
+const operation = pathItem.get;
 
-// 2. Dynamické sestavení validačního schématu pro query parametry
+const allParameters = [
+  ...(pathItem.parameters || []),
+  ...(operation.parameters || [])
+];
+
+// 2. Dynamické sestavení validačního schématu (JSON Schema) pro parametry požadavku
 const properties = {};
 const required = [];
 
-parameters.forEach(param => {
-  if (param.in === "query") {
-    properties[param.name] = param.schema;
-    if (param.required) {
-      required.push(param.name);
-    }
+allParameters.forEach(param => {
+  properties[param.name] = param.schema;
+  if (param.required && !required.includes(param.name)) {
+    required.push(param.name);
   }
 });
 
@@ -35,14 +38,14 @@ const validate = ajv.compile(schema);
 async function ListAbl(req, res) {
   try {
     // U operace typu list (GET) validujeme query string
-    const filter = req.query;
+    const reqParams = req.query;
 
     // Validace vstupu proti schématu odvozenému z OpenAPI
-    const valid = validate(filter);
+    const valid = validate(reqParams);
     if (!valid) {
       return res.status(400).json({
-        code: "dtoInIsNotValid",
-        message: "dtoIn is not valid",
+        code: "requestIsNotValid",
+        message: "Request is not valid",
         validationError: validate.errors,
       });
     }

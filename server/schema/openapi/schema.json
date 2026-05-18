@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "TaxPayer & Invoice API",
+    "title": "EasyVAT REST API",
     "description": "API for managing taxpayers and their issued or received invoices, including tax exports.",
-    "version": "1.2.0"
+    "version": "1.3.0"
   },
   "tags": [
     {
@@ -20,6 +20,24 @@
     }
   ],
   "paths": {
+    "/taxpayers/taxpayer": {
+      "post": {
+        "tags": ["TaxPayer"],
+        "summary": "Create a new taxpayer",
+        "operationId": "createTaxPayer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TaxPayer" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Taxpayer successfully created" }
+        }
+      }
+    },
     "/taxpayers": {
       "get": {
         "tags": ["TaxPayer"],
@@ -55,25 +73,9 @@
             }
           }
         }
-      },
-      "post": {
-        "tags": ["TaxPayer"],
-        "summary": "Create a new taxpayer",
-        "operationId": "createTaxPayer",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/TaxPayer" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Taxpayer successfully created" }
-        }
       }
     },
-    "/taxpayers/{id}": {
+    "/taxpayers/taxpayer/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -91,6 +93,18 @@
             "description": "Successful retrieval",
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/TaxPayer" } }
+            }
+          },
+          "400": {
+            "description": "Request is not valid",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorValidation" } }
+            }
+          },
+          "404": {
+            "description": "Tax payer not found",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
             }
           }
         }
@@ -115,6 +129,22 @@
         "operationId": "deleteTaxPayer",
         "responses": {
           "204": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/invoices/invoice": {
+      "post": {
+        "tags": ["Invoice"],
+        "summary": "Create a new invoice",
+        "operationId": "createInvoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "Invoice created successfully" }
         }
       }
     },
@@ -153,23 +183,9 @@
             }
           }
         }
-      },
-      "post": {
-        "tags": ["Invoice"],
-        "summary": "Create a new invoice",
-        "operationId": "createInvoice",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } }
-          }
-        },
-        "responses": {
-          "201": { "description": "Invoice created successfully" }
-        }
       }
     },
-    "/invoices/{id}": {
+    "/invoices/invoice/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -328,6 +344,23 @@
           "description": { "type": "string", "nullable": true },
           "price": { "type": "number", "format": "float" },
           "vatValue": { "type": "number", "format": "float" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code", "message" ],
+        "properties": {
+          "code": { "type": "string", "readOnly": true },
+          "message": { "type": "string", "readOnly": true  }
+        }
+      },
+      "ErrorValidation": {
+        "type": "object",
+        "required": ["code", "message" ],
+        "properties": {
+          "code": { "type": "string", "readOnly": true },
+          "message": { "type": "string", "readOnly": true  },
+          "validationError": { "type": "string", "readOnly": true }
         }
       }
     }

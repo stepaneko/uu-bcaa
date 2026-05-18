@@ -1,24 +1,37 @@
 const Ajv = require("ajv");
+const addFormats = require("ajv-formats");
 const invoiceDao = require("../../dao/invoice-dao.js");
 const taxPayerDao = require("../../dao/taxPayer-dao.js");
-
-// Načtení OpenAPI schématu
 const openApiSchema = require("../../schema/openapi/schema.json");
 
 const ajv = new Ajv();
+addFormats(ajv);
 
 // 1. Extrakce definice parametru 'id' pro cestu /invoices/{id}
-const pathItem = openApiSchema.paths["/invoices/{id}"];
-const idParameter = pathItem.parameters.find(param => param.name === "id");
+const pathItem = openApiSchema.paths["/invoices/invoice/{id}"];
+const operation = pathItem.get;
 
-// 2. Sestavení validačního schématu
+const allParameters = [
+  ...(pathItem.parameters || []),
+  ...(operation.parameters || [])
+];
+
+// 2. Dynamické sestavení validačního schématu (JSON Schema) pro parametry požadavku
+const properties = {};
+const required = [];
+
+allParameters.forEach(param => {
+  properties[param.name] = param.schema;
+  if (param.required && !required.includes(param.name)) {
+    required.push(param.name);
+  }
+});
+
 const schema = {
   type: "object",
-  properties: {
-    [idParameter.name]: idParameter.schema
-  },
-  required: idParameter.required ? [idParameter.name] : [],
-  additionalProperties: false,
+  properties,
+  required,
+  additionalProperties: false, // Nepovolujeme parametry, které nejsou v OpenAPI schématu
 };
 
 const validate = ajv.compile(schema);
@@ -26,14 +39,14 @@ const validate = ajv.compile(schema);
 async function GetAbl(req, res) {
   try {
     // Získání ID z parametrů cesty (req.params)
-    const reqParams = req.params?.id ? req.params : (req.query?.id ? req.query : req.body);
+    const reqParams = req.params;
 
     // Validace vstupu
     const valid = validate(reqParams);
     if (!valid) {
       return res.status(400).json({
-        code: "dtoInIsNotValid",
-        message: "dtoIn is not valid",
+        code: "requestIsNotValid",
+        message: "Request is not valid",
         validationError: validate.errors,
       });
     }

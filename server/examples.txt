@@ -8,7 +8,7 @@ curl -X GET "http://localhost:8888/export/kh?taxPayerId=c36340f150606b623ee22083
 
 curl -X GET http://localhost:8888/taxpayer/get?id=c36340f150606b623ee2208322592dac
 
-curl -X GET http://localhost:8888/taxpayers/c36340f150606b623ee2208322592dac -H "accept: application/json"
+curl -X GET http://localhost:8888/taxpayer/c36340f150606b623ee2208322592dac -H "accept: application/json"
 
 curl -X GET http://localhost:8888/taxpayer/list
 

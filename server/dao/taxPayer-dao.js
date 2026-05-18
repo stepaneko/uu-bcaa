@@ -29,10 +29,53 @@ function create(taxPayer) {
     if (taxPayerList.some((item) => item.vatId === taxPayer.vatId)) {
       throw {
         code: "duplicateVatId",
-        message: "TaxPayer with the given vatId already exists",
+        message: "Tax payer with the given vatId already exists",
       };
     }
     
+    // specific validations by type
+    if (taxPayer.type === "individual" && !taxPayer.firstName) {
+      throw{
+        code: "individualFirstNameMissing",
+        message: "First name is missing for individual tax payer",
+      };
+    }
+
+    if (taxPayer.type === "individual" && !taxPayer.lastName) {
+      throw{
+        code: "individualLastNameMissing",
+        message: "Last name is missing for individual tax payer",
+      };
+    }
+
+    if (taxPayer.type === "individual" && taxPayer.companyName) {
+      throw{
+        code: "individualCompanyNameNotAllowed",
+        message: "Company name is not allowed for individual tax payer",
+      };
+    }
+
+    if (taxPayer.type === "company" && !taxPayer.companyName) {
+      throw{
+        code: "companyNameMissing",
+        message: "Company name is missing for company tax payer",
+      };
+    }
+
+    if (taxPayer.type === "company" && taxPayer.firstName) {
+      throw{
+        code: "companyFirstNameNotAllowed",
+        message: "First name is not allowed for company tax payer",
+      };
+    }
+
+    if (taxPayer.type === "company" && taxPayer.lastName) {
+      throw{
+        code: "companyLastNameNotAllowed",
+        message: "Last name is not allowed for company tax payer",
+      };
+    }
+
     taxPayer.id = crypto.randomBytes(16).toString("hex");
     const filePath = path.join(taxPayerFolderPath, `${taxPayer.id}.json`);
     const fileData = JSON.stringify(taxPayer, null, 2); // Optimalizace: formátovaný JSON pro lepší čitelnost
@@ -62,7 +105,7 @@ function update(taxPayer) {
       }
     }
 
-    const newTaxPayer = { ...currentTaxPayer, ...taxPayer };
+    const newTaxPayer = { ...taxPayer, id: currentTaxPayer.id }
     const filePath = path.join(taxPayerFolderPath, `${taxPayer.id}.json`);
     const fileData = JSON.stringify(newTaxPayer, null, 2);
     fs.writeFileSync(filePath, fileData, "utf8");

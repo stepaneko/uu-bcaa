@@ -7,10 +7,10 @@ const CreateAbl = require("../abl/invoice/createAbl");
 const UpdateAbl = require("../abl/invoice/updateAbl");
 const DeleteAbl = require("../abl/invoice/deleteAbl");
 
-router.get("/get", GetAbl);
-router.get("/list", ListAbl);
-router.post("/create", CreateAbl);
-router.post("/update", UpdateAbl);
-router.post("/delete", DeleteAbl);
+router.get("/invoice/:id", GetAbl);
+router.get("/", ListAbl);
+router.post("/invoice", CreateAbl);
+router.put("/invoice/:id", UpdateAbl);
+router.delete("/invoice/:id", DeleteAbl);
 
 module.exports = router;

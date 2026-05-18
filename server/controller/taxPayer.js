@@ -7,12 +7,10 @@ const CreateAbl = require("../abl/taxPayer/createAbl");
 const UpdateAbl = require("../abl/taxPayer/updateAbl");
 const DeleteAbl = require("../abl/taxPayer/deleteAbl");
 
-router.get("/get", GetAbl);
-router.get("/:id", GetAbl);
-router.get("/list", ListAbl);
-router.post("/create", CreateAbl);
-router.post("/update", UpdateAbl);
-router.put("/:id", UpdateAbl);
-router.post("/delete", DeleteAbl);
+router.get("/taxpayer/:id", GetAbl);
+router.get("/", ListAbl);
+router.post("/taxpayer/", CreateAbl);
+router.put("/taxpayer/:id", UpdateAbl);
+router.delete("/taxpayer/:id", DeleteAbl);
 
 module.exports = router;

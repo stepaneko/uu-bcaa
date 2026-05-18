@@ -25,9 +25,8 @@ app.get("/", (req, res) => {
   res.redirect(301, "/docs");
 });
 
-app.use("/taxpayer", taxPayerController);
 app.use("/taxpayers", taxPayerController);
-app.use("/invoice", invoiceController);
+app.use("/invoices", invoiceController);
 app.use("/export", exportController);
 
 app.listen(port, () => {
