@@ -6,7 +6,6 @@ const openApiSchema = require("../../schema/openapi/schema.json");
 const ajv = new Ajv();
 addFormats(ajv);
 
-// Vytažení schématu přímo z OpenAPI definice
 const schema = openApiSchema.components.schemas.TaxPayer;
 
 const validate = ajv.compile(schema);
@@ -21,20 +20,19 @@ async function CreateAbl(req, res) {
       return res.status(400).json({
         code: "requestIsNotValid",
         message: "Request is not valid",
-        validationError: validate.errors,
+        validationError: validate.errors
       });
     }
 
-    // Odstranění případných bílých znaků z kritických polí
+    // Remove whitespace characters
     if (reqParams.vatId) reqParams.vatId = reqParams.vatId.trim();
 
-    // Vytvoření záznamu
     const taxPayer = taxPayerDao.create(reqParams);
     res.status(201).json(taxPayer);
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
 
-    const errorRequestCodes = [
+    const errorCodes = [
       "duplicateVatId",
       "individualFirstNameMissing",
       "individualLastNameMissing",
@@ -44,10 +42,10 @@ async function CreateAbl(req, res) {
       "companyLastNameNotAllowed"
     ];
 
-    if (errorRequestCodes.includes(e.code)) {
-      return res.status(400).json({ code: e.code, message: e.message });
+    if (errorCodes.includes(error.code)) {
+      return res.status(400).json({ code: error.code, message: error.message });
     }
-    res.status(500).json({ message: e.message });
+    res.status(500).json({ message: error.message });
   }
 }
 

@@ -1,28 +1,31 @@
 const fs = require("fs");
 const path = require("path");
 const Ajv = require("ajv");
+const addFormats = require("ajv-formats").default;
 const libxmljs = require("libxmljs2");
 const taxPayerDao = require("../../dao/taxPayer-dao.js");
 const invoiceDao = require("../../dao/invoice-dao.js");
 
-// Načtení OpenAPI schématu
 const openApiSchema = require("../../schema/openapi/schema.json");
 
-const ajv = new Ajv({ coerceTypes: true, useDefaults: true });
+const ajv = new Ajv();
+addFormats(ajv);
 
-// 1. Dynamické sestavení validačního schématu pro operaci GET /export/dp
-const operation = openApiSchema.paths["/export/dp"].get;
-const parameters = operation.parameters || [];
+const pathItem = openApiSchema.paths["/export/dp"];
+const operation = pathItem.get;
+
+const allParameters = [
+  ...(pathItem.parameters || []),
+  ...(operation.parameters || [])
+];
 
 const properties = {};
 const required = [];
 
-parameters.forEach(param => {
-  if (param.in === "query") {
-    properties[param.name] = param.schema;
-    if (param.required) {
-      required.push(param.name);
-    }
+allParameters.forEach(param => {
+  properties[param.name] = param.schema;
+  if (param.required && !required.includes(param.name)) {
+    required.push(param.name);
   }
 });
 
@@ -30,43 +33,39 @@ const schema = {
   type: "object",
   properties,
   required,
-  additionalProperties: false,
+  additionalProperties: false
 };
 
-const validateDtoIn = ajv.compile(schema);
+const validate = ajv.compile(schema);
 
 async function ExportDpAbl(req, res) {
   try {
-    // Vstupy z query stringu
-    const query = req.query;
+    const reqParams = req.query;
 
-    // 2. Validace vstupu proti OpenAPI schématu
-    const valid = validateDtoIn(query);
+    const valid = validate(reqParams);
     if (!valid) {
       return res.status(400).json({
-        code: "dtoInIsNotValid",
-        message: "dtoIn is not valid",
-        validationError: validateDtoIn.errors,
+        code: "requestIsNotValid",
+        message: "Request is not valid",
+        validationError: validate.errors
       });
     }
 
-    const { taxPayerId, month, year } = query;
+    const { taxPayerId, month, year } = reqParams;
 
-    // 3. Načtení dat
     const taxPayer = taxPayerDao.get(taxPayerId);
     if (!taxPayer) {
       return res.status(404).json({
         code: "taxPayerNotFound",
-        message: `TaxPayer with id ${taxPayerId} not found`,
+        message: `Tax payer with id ${taxPayerId} not found`,
       });
     }
 
-    const invoices = invoiceDao.listByTaxPayerIdAndTaxPeriod(taxPayerId, month, year);
+    const invoiceList = invoiceDao.list({ taxPayerId, month, year });
 
-    // 4. Výpočet agregovaných hodnot
     let obrat23 = 0; let dan23 = 0; let pln23 = 0; let odp_tuz23_nar = 0;
 
-    invoices.forEach((inv) => {
+    invoiceList.forEach((inv) => {
       if (inv.type === "issued") {
         obrat23 += inv.price || 0;
         dan23 += inv.vatValue || 0;
@@ -85,7 +84,6 @@ async function ExportDpAbl(req, res) {
     const typ_ds = taxPayer.type === "individual" ? "F" : "P";
     const dic_numeric = taxPayer.vatId ? taxPayer.vatId.replace(/\D/g, "") : "";
 
-    // 5. Generování XML
     const xmlString = `<?xml version="1.0" encoding="utf-8"?>
 <Pisemnost nazevSW="EasyVAT" verzeSW="1.0.0">
   <DPHDP3 verzePis="01.02">
@@ -97,7 +95,6 @@ async function ExportDpAbl(req, res) {
   </DPHDP3>
 </Pisemnost>`;
 
-    // 6. XSD Validace
     const xsdPath = path.join(__dirname, "../../schema/xsd/dphdp3_epo2.xsd");
     const xsdString = fs.readFileSync(xsdPath, "utf8");
     const xmlDoc = libxmljs.parseXml(xmlString);
@@ -109,8 +106,8 @@ async function ExportDpAbl(req, res) {
 
     res.set("Content-Type", "application/xml");
     res.status(200).send(xmlString);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 }
 

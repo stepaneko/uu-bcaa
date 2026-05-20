@@ -21,7 +21,7 @@ async function CreateAbl(req, res) {
       return res.status(400).json({
         code: "requestIsNotValid",
         message: "Request is not valid",
-        validationError: validate.errors,
+        validationError: validate.errors
       });
     }
 
@@ -30,7 +30,7 @@ async function CreateAbl(req, res) {
     if (!taxPayer) {
       return res.status(400).json({
         code: "taxPayerDoesNotExist",
-        message: `TaxPayer with id ${reqParams.taxPayerId} does not exist`,
+        message: `TaxPayer with id ${reqParams.taxPayerId} does not exist`
       });
     }
 
@@ -38,20 +38,20 @@ async function CreateAbl(req, res) {
     const invoice = invoiceDao.create(reqParams);
     invoice.taxPayer = taxPayer; // Připojíme detail poplatníka do odpovědi
 
-    // return properly filled dtoOut
+    // return properly filled output
     res.status(201).json(invoice);
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
 
     const errorRequestCodes = [
       "duplicateInvoice"
     ];
 
-    // Zachycení chyby duplicity z DAO
-    if (errorRequestCodes.includes(e.code)) {
-      return res.status(400).json({ code: e.code, message: e.message });
+    // Catch duplicity error from DAO
+    if (errorRequestCodes.includes(error.code)) {
+      return res.status(400).json({ code: error.code, message: error.message });
     }
-    res.status(500).json({ message: e.message });
+    res.status(500).json({ message: error.message });
   }
 }
 

@@ -4,39 +4,41 @@ const crypto = require("crypto");
 
 const invoiceFolderPath = path.join(__dirname, "storage", "invoiceList");
 
-// Optimalizace: Zajištění existence složky pro ukládání dat při startu
+// if data storage directory does not exist, it is automatically created
 if (!fs.existsSync(invoiceFolderPath)) {
   fs.mkdirSync(invoiceFolderPath, { recursive: true });
 }
 
-// Pomocná funkce pro kontrolu duplicity
+// Duplicity check
 function isDuplicate(invoiceList, invoiceToCheck, ignoreId = null) {
   return invoiceList.some((existingInvoice) => {
-    // Při aktualizaci ignorujeme záznam, který právě upravujeme
+    // Record being updated is ignored
     if (ignoreId && existingInvoice.id === ignoreId) {
       return false;
     }
 
     if (invoiceToCheck.type === "issued" && existingInvoice.type === "issued") {
-      // Pro vydané faktury: shoda na taxPayerId a number
+      // issued invoice: taxPayerId and number must be unique
       return (
         existingInvoice.taxPayerId === invoiceToCheck.taxPayerId &&
         existingInvoice.number === invoiceToCheck.number
       );
-    } else if (invoiceToCheck.type === "received" && existingInvoice.type === "received") {
-      // Pro přijaté faktury: shoda na taxPayerId, number a vatId
+    } else if (
+      invoiceToCheck.type === "received" &&
+      existingInvoice.type === "received"
+    ) {
+      // received invoice: taxPayerId, number and vatId must be unique
       return (
         existingInvoice.taxPayerId === invoiceToCheck.taxPayerId &&
         existingInvoice.number === invoiceToCheck.number &&
         existingInvoice.vatId === invoiceToCheck.vatId
       );
     }
-    
     return false;
   });
 }
 
-// Method to read an invoice from a file
+// Read an invoice from a file
 function get(invoiceId) {
   try {
     const filePath = path.join(invoiceFolderPath, `${invoiceId}.json`);
@@ -48,16 +50,17 @@ function get(invoiceId) {
   }
 }
 
-// Method to write an invoice to a file
+// Write an invoice to a file
 function create(invoice) {
   try {
     const invoiceList = list();
 
-    // Kontrola duplicity před vytvořením
+    // Check duplicity before creation
     if (isDuplicate(invoiceList, invoice)) {
       throw {
         code: "duplicateInvoice",
         message: "Invoice with the given parameters already exists.",
+        knownError: true
       };
     }
 
@@ -67,13 +70,12 @@ function create(invoice) {
     fs.writeFileSync(filePath, fileData, "utf8");
     return invoice;
   } catch (error) {
-    // Propustíme naši vlastní chybu pro duplicitu
-    if (error.code === "duplicateInvoice") throw error;
+    if (error.knownError) throw error;
     throw { code: "failedToCreateInvoice", message: error.message };
   }
 }
 
-// Method to update invoice in a file
+// Update invoice in a file
 function update(invoice) {
   try {
     const currentInvoice = get(invoice.id);
@@ -82,11 +84,12 @@ function update(invoice) {
     const newInvoice = { ...currentInvoice, ...invoice };
     const invoiceList = list();
 
-    // Kontrola duplicity před aktualizací (ignorujeme ID aktuální faktury)
+    // Check duplicity before update
     if (isDuplicate(invoiceList, newInvoice, invoice.id)) {
       throw {
         code: "duplicateInvoice",
         message: "Invoice update would result in a duplicate.",
+        knownError: true
       };
     }
 
@@ -95,12 +98,12 @@ function update(invoice) {
     fs.writeFileSync(filePath, fileData, "utf8");
     return newInvoice;
   } catch (error) {
-    if (error.code === "duplicateInvoice") throw error;
+    if (error.knownError) throw error;
     throw { code: "failedToUpdateInvoice", message: error.message };
   }
 }
 
-// Method to remove an invoice from a file
+// Remove an invoice from a file
 function remove(invoiceId) {
   try {
     const filePath = path.join(invoiceFolderPath, `${invoiceId}.json`);
@@ -112,10 +115,12 @@ function remove(invoiceId) {
   }
 }
 
-// Method to list invoices in a folder
-function list() {
+function list(options = {}) {
   try {
+    const { limit, offset = 0, search, taxPayerId, month, year } = options;
+
     const files = fs.readdirSync(invoiceFolderPath);
+
     const invoiceList = files.map((file) => {
       const fileData = fs.readFileSync(
         path.join(invoiceFolderPath, file),
@@ -123,29 +128,60 @@ function list() {
       );
       return JSON.parse(fileData);
     });
+
+    // Filter by taxPayerId (if provided)
+    if (taxPayerId) {
+      invoiceList = invoiceList.filter(
+        (invoice) => invoice.taxPayerId === taxPayerId
+      );
+    }
+
+    // Filter by tax period (if provided)
+    if (month && year) {
+      invoiceList = invoiceList.filter((invoice) => {
+        const date = new Date(invoice.taxableDate);
+        // getMonth() returns indices 0-11, therefore 1 is added
+        return (
+          date.getMonth() + 1 === parseInt(month, 10) &&
+          date.getFullYear() === parseInt(year, 10)
+        );
+      });
+    }
+
+    // Search applied (if provided)
+    if (search) {
+      const searchLower = search.toLowerCase();
+      invoiceList = invoiceList.filter((invoice) => {
+        return (
+          (invoice.number &&
+            invoice.number.toLowerCase().includes(searchLower)) ||
+          (invoice.name && invoice.name.toLowerCase().includes(searchLower)) ||
+          (invoice.vatId &&
+            invoice.vatId.toLowerCase().includes(searchLower)) ||
+          (invoice.description &&
+            invoice.description.toLowerCase().includes(searchLower))
+        );
+      });
+    }
+
+    // Sort result (from newest invoice to the oldest one)
+    invoiceList.sort((a, b) => new Date(b.taxableDate) - new Date(a.taxableDate));
+
+    // Paging applied
+    const skip = parseInt(offset, 10);
+    const take = limit ? parseInt(limit, 10) : invoiceList.length;
+
+    if (skip > 0 || take < invoiceList.length) {
+      invoiceList = invoiceList.slice(skip, skip + take);
+    }
+
     return invoiceList;
   } catch (error) {
-    throw { code: "failedToListInvoices", message: error.message };
+    if (error.code === "ENOENT") {
+      return [];
+    }
+    throw { code: "failedToReadInvoices", message: error.message };
   }
-}
-
-// Method to list invoices by taxPayerId
-function listByTaxPayerId(taxPayerId) {
-  const invoiceList = list();
-  return invoiceList.filter((item) => item.taxPayerId === taxPayerId);
-}
-
-// DOPLNĚNÁ FUNKCE: List invoices by taxPayerId and tax period (month and year)
-function listByTaxPayerIdAndTaxPeriod(taxPayerId, month, year) {
-  const invoiceList = list();
-  return invoiceList.filter((item) => {
-    const date = new Date(item.taxableDate);
-    return (
-      item.taxPayerId === taxPayerId &&
-      date.getMonth() + 1 === parseInt(month) &&
-      date.getFullYear() === parseInt(year)
-    );
-  });
 }
 
 module.exports = {
@@ -153,7 +189,5 @@ module.exports = {
   create,
   update,
   remove,
-  list,
-  listByTaxPayerId,
-  listByTaxPayerIdAndTaxPeriod,
+  list
 };

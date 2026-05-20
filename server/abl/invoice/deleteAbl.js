@@ -6,7 +6,6 @@ const openApiSchema = require("../../schema/openapi/schema.json");
 const ajv = new Ajv();
 addFormats(ajv);
 
-// 1. Nalezení definice cesty a parametru z OpenAPI schématu
 const pathItem = openApiSchema.paths["/invoices/invoice/{id}"];
 const operation = pathItem.delete;
 
@@ -15,7 +14,6 @@ const allParameters = [
   ...(operation.parameters || [])
 ];
 
-// 2. Dynamické sestavení validačního schématu (JSON Schema) pro parametry požadavku
 const properties = {};
 const required = [];
 
@@ -30,7 +28,7 @@ const schema = {
   type: "object",
   properties,
   required,
-  additionalProperties: false, // Nepovolujeme parametry, které nejsou v OpenAPI schématu
+  additionalProperties: false
 };
 
 const validate = ajv.compile(schema);
@@ -63,9 +61,9 @@ async function DeleteAbl(req, res) {
 
     // return properly filled dtoOut
     res.json({});
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 }
 

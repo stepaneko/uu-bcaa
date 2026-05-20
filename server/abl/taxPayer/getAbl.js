@@ -6,7 +6,6 @@ const openApiSchema = require("../../schema/openapi/schema.json");
 const ajv = new Ajv();
 addFormats(ajv);
 
-// 1. Nalezení definice cesty a parametru z OpenAPI schématu
 const pathItem = openApiSchema.paths["/taxpayers/taxpayer/{id}"];
 const operation = pathItem.get;
 
@@ -15,7 +14,6 @@ const allParameters = [
   ...(operation.parameters || [])
 ];
 
-// 2. Dynamické sestavení validačního schématu (JSON Schema) pro parametry požadavku
 const properties = {};
 const required = [];
 
@@ -30,7 +28,7 @@ const schema = {
   type: "object",
   properties,
   required,
-  additionalProperties: false, // Nepovolujeme parametry, které nejsou v OpenAPI schématu
+  additionalProperties: false
 };
 
 const validate = ajv.compile(schema);
@@ -39,32 +37,27 @@ async function GetAbl(req, res) {
   try {
     const reqParams = req.params;
 
-    // Validace vstupu proti sestavenému schématu z OpenAPI
     const valid = validate(reqParams);
     if (!valid) {
       return res.status(400).json({
         code: "requestIsNotValid",
         message: "Request is not valid",
-        validationError: validate.errors,
+        validationError: validate.errors
       });
     }
 
-    // Načtení detailu poplatníka přes DAO
     const taxPayer = taxPayerDao.get(reqParams.id);
-    
-    // Pokud poplatník s daným ID neexistuje
     if (!taxPayer) {
       return res.status(404).json({
         code: "taxPayerNotFound",
-        message: `Tax payer with id ${reqParams.id} not found`,
+        message: `Tax payer with id ${reqParams.id} not found`
       });
     }
 
-    // Vrácení úspěšného výsledku
     res.json(taxPayer);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 }
 

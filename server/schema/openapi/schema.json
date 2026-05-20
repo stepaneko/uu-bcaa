@@ -8,7 +8,7 @@
   "tags": [
     {
       "name": "TaxPayer",
-      "description": "Operations for managing taxpayers"
+      "description": "Operations for managing tax payers"
     },
     {
       "name": "Invoice",
@@ -22,52 +22,107 @@
   "paths": {
     "/taxpayers/taxpayer": {
       "post": {
-        "tags": ["TaxPayer"],
+        "tags": [
+          "TaxPayer"
+        ],
         "summary": "Create a new taxpayer",
         "operationId": "createTaxPayer",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/TaxPayer" }
+              "schema": {
+                "$ref": "#/components/schemas/TaxPayer"
+              }
             }
           }
         },
         "responses": {
-          "201": { "description": "Taxpayer successfully created" }
+          "201": {
+            "description": "Tax payer successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxPayer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidation"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/taxpayers": {
       "get": {
-        "tags": ["TaxPayer"],
-        "summary": "Get list of taxpayers",
+        "tags": [
+          "TaxPayer"
+        ],
+        "summary": "Get list of tax payers",
         "operationId": "getTaxPayersList",
         "parameters": [
           {
             "name": "limit",
             "in": "query",
-            "schema": { "type": "integer", "default": 10 }
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
           },
           {
             "name": "offset",
             "in": "query",
-            "schema": { "type": "integer", "default": 0 }
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
           },
           {
             "name": "search",
             "in": "query",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful retrieval of the list",
+            "description": "Successful retrieval",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/TaxPayer" }
+                  "items": {
+                    "$ref": "#/components/schemas/TaxPayer"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -81,95 +136,180 @@
           "name": "id",
           "in": "path",
           "required": true,
-          "schema": { "type": "string" }
+          "schema": {
+            "type": "string"
+          }
         }
       ],
       "get": {
-        "tags": ["TaxPayer"],
-        "summary": "Get taxpayer details by ID",
+        "tags": [
+          "TaxPayer"
+        ],
+        "summary": "Get tax payer details by ID",
         "operationId": "getTaxPayerById",
         "responses": {
           "200": {
             "description": "Successful retrieval",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/TaxPayer" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxPayer"
+                }
+              }
             }
           },
           "400": {
             "description": "Request is not valid",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorValidation" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidation"
+                }
+              }
             }
           },
           "404": {
             "description": "Tax payer not found",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
         }
       },
       "put": {
-        "tags": ["TaxPayer"],
+        "tags": [
+          "TaxPayer"
+        ],
         "summary": "Update an existing taxpayer",
         "operationId": "updateTaxPayer",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/TaxPayer" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxPayer"
+              }
+            }
           }
         },
         "responses": {
-          "200": { "description": "Updated successfully" }
+          "200": {
+            "description": "Updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxPayer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidation"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
-        "tags": ["TaxPayer"],
+        "tags": [
+          "TaxPayer"
+        ],
         "summary": "Delete a taxpayer",
         "operationId": "deleteTaxPayer",
         "responses": {
-          "204": { "description": "Deleted successfully" }
+          "204": {
+            "description": "Deleted successfully"
+          }
         }
       }
     },
     "/invoices/invoice": {
       "post": {
-        "tags": ["Invoice"],
+        "tags": [
+          "Invoice"
+        ],
         "summary": "Create a new invoice",
         "operationId": "createInvoice",
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } }
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invoice"
+              }
+            }
           }
         },
         "responses": {
-          "201": { "description": "Invoice created successfully" }
+          "201": {
+            "description": "Invoice created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidation"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/invoices": {
       "get": {
-        "tags": ["Invoice"],
+        "tags": [
+          "Invoice"
+        ],
         "summary": "Get list of invoices",
         "operationId": "getInvoicesList",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": { "type": "integer", "default": 10 }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "schema": { "type": "integer", "default": 0 }
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "schema": { "type": "string" }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful retrieval",
@@ -177,7 +317,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Invoice" }
+                  "items": {
+                    "$ref": "#/components/schemas/Invoice"
+                  }
                 }
               }
             }
@@ -191,119 +333,157 @@
           "name": "id",
           "in": "path",
           "required": true,
-          "schema": { "type": "string" }
+          "schema": {
+            "type": "string"
+          }
         }
       ],
       "get": {
-        "tags": ["Invoice"],
-        "summary": "Get invoice details by ID",
+        "tags": [
+          "Invoice"
+        ],
+        "summary": "Get invoice details",
         "operationId": "getInvoiceById",
         "responses": {
           "200": {
-            "description": "Successful retrieval",
+            "description": "Success",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
             }
           }
         }
       },
       "put": {
-        "tags": ["Invoice"],
-        "summary": "Update an existing invoice",
+        "tags": [
+          "Invoice"
+        ],
+        "summary": "Update invoice",
         "operationId": "updateInvoice",
-        "responses": { "200": { "description": "Updated successfully" } }
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          }
+        }
       },
       "delete": {
-        "tags": ["Invoice"],
-        "summary": "Delete an invoice",
-        "responses": { "204": { "description": "Deleted successfully" } }
+        "tags": [
+          "Invoice"
+        ],
+        "summary": "Delete invoice",
+        "operationId": "deleteInvoice",
+        "responses": {
+          "204": {
+            "description": "Deleted successfully"
+          }
+        }
       }
     },
     "/export/dp": {
       "get": {
-        "tags": ["Export"],
+        "tags": [
+          "Export"
+        ],
         "summary": "Export VAT return (DPH) to XML",
-        "description": "Generates an XML file for VAT return based on dphdp3_epo2.xsd.",
         "operationId": "exportDphXml",
         "parameters": [
           {
             "name": "taxPayerId",
             "in": "query",
             "required": true,
-            "description": "Identifier of the taxpayer.",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "month",
             "in": "query",
             "required": true,
-            "description": "Tax period - month.",
-            "schema": { "type": "integer", "minimum": 1, "maximum": 12 }
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
           },
           {
             "name": "year",
             "in": "query",
             "required": true,
-            "description": "Tax period - year.",
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful generation of VAT return XML",
+            "description": "XML generated",
             "content": {
               "application/xml": {
-                "schema": { "type": "string", "format": "xml" }
+                "schema": {
+                  "type": "string"
+                }
               }
             }
-          },
-          "400": { "description": "Invalid input parameters" },
-          "404": { "description": "Taxpayer or data not found" },
-          "500": { "description": "XML generation or validation failed" }
+          }
         }
       }
     },
     "/export/kh": {
       "get": {
-        "tags": ["Export"],
+        "tags": [
+          "Export"
+        ],
         "summary": "Export VAT control statement (KH) to XML",
-        "description": "Generates an XML file for VAT control statement based on dphkh1_epo2.xsd.",
         "operationId": "exportKhXml",
         "parameters": [
           {
             "name": "taxPayerId",
             "in": "query",
             "required": true,
-            "description": "Identifier of the taxpayer.",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "month",
             "in": "query",
             "required": true,
-            "description": "Tax period - month.",
-            "schema": { "type": "integer", "minimum": 1, "maximum": 12 }
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
           },
           {
             "name": "year",
             "in": "query",
             "required": true,
-            "description": "Tax period - year.",
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful generation of control statement XML",
+            "description": "XML generated",
             "content": {
               "application/xml": {
-                "schema": { "type": "string", "format": "xml" }
+                "schema": {
+                  "type": "string"
+                }
               }
             }
-          },
-          "400": { "description": "Invalid input parameters" },
-          "404": { "description": "Taxpayer or data not found" },
-          "500": { "description": "XML generation or validation failed" }
+          }
         }
       }
     }
@@ -312,55 +492,162 @@
     "schemas": {
       "TaxPayer": {
         "type": "object",
-        "required": ["type", "vatId", "street", "descriptiveNumber", "city", "postalCode", "email", "phoneNumber"],
+        "required": [
+          "type",
+          "vatId",
+          "street",
+          "descriptiveNumber",
+          "city",
+          "postalCode",
+          "email",
+          "phoneNumber"
+        ],
         "properties": {
-          "id": { "type": "string", "readOnly": true },
-          "type": { "type": "string", "enum": ["individual", "company"] },
-          "title": { "type": "string", "nullable": true },
-          "firstName": { "type": "string", "nullable": true },
-          "lastName": { "type": "string", "nullable": true },
-          "companyName": { "type": "string", "nullable": true },
-          "vatId": { "type": "string" },
-          "street": { "type": "string" },
-          "descriptiveNumber": { "type": "string" },
-          "referenceNumber": { "type": "string", "nullable": true },
-          "city": { "type": "string" },
-          "postalCode": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "phoneNumber": { "type": "string" }
+          "id": {
+            "type": "string",
+            "readOnly": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "company"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "vatId": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "descriptiveNumber": {
+            "type": "string"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phoneNumber": {
+            "type": "string"
+          }
         }
       },
       "Invoice": {
         "type": "object",
-        "required": ["taxPayerId", "type", "number", "vatId", "name", "taxableDate", "price", "vatValue"],
+        "required": [
+          "taxPayerId",
+          "type",
+          "number",
+          "vatId",
+          "name",
+          "taxableDate",
+          "price",
+          "vatValue"
+        ],
         "properties": {
-          "id": { "type": "string", "readOnly": true },
-          "taxPayerId": { "type": "string" },
-          "type": { "type": "string", "enum": ["issued", "received"] },
-          "number": { "type": "string" },
-          "vatId": { "type": "string" },
-          "name": { "type": "string" },
-          "taxableDate": { "type": "string", "format": "date" },
-          "description": { "type": "string", "nullable": true },
-          "price": { "type": "number", "format": "float" },
-          "vatValue": { "type": "number", "format": "float" }
+          "id": {
+            "type": "string",
+            "readOnly": true
+          },
+          "taxPayerId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "issued",
+              "received"
+            ]
+          },
+          "number": {
+            "type": "string"
+          },
+          "vatId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taxableDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "float"
+          },
+          "vatValue": {
+            "type": "number",
+            "format": "float"
+          }
         }
       },
       "Error": {
         "type": "object",
-        "required": ["code", "message" ],
+        "required": [
+          "code",
+          "message"
+        ],
         "properties": {
-          "code": { "type": "string", "readOnly": true },
-          "message": { "type": "string", "readOnly": true  }
+          "code": {
+            "type": "string",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string",
+            "readOnly": true
+          }
         }
       },
       "ErrorValidation": {
         "type": "object",
-        "required": ["code", "message" ],
+        "required": [
+          "code",
+          "message"
+        ],
         "properties": {
-          "code": { "type": "string", "readOnly": true },
-          "message": { "type": "string", "readOnly": true  },
-          "validationError": { "type": "string", "readOnly": true }
+          "code": {
+            "type": "string",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string",
+            "readOnly": true
+          },
+          "validationError": {
+            "type": "string",
+            "readOnly": true
+          }
         }
       }
     }
