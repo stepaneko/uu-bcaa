@@ -73,7 +73,7 @@ function get(taxPayerId) {
 // Write a tax payer to a file
 function create(taxPayer) {
   try {
-    const taxPayerList = list();
+    const { itemList: taxPayerList } = list();
     // vatId must be unique
     if (taxPayerList.some((item) => item.vatId === taxPayer.vatId)) {
       throw {
@@ -154,11 +154,13 @@ function list(options = {}) {
 
     const files = fs.readdirSync(taxPayerFolderPath);
 
-    const taxPayerList = files.map((file) => {
+    let taxPayerList = files.map((file) => {
       const filePath = path.join(taxPayerFolderPath, file);
       const fileData = fs.readFileSync(filePath, "utf8");
       return JSON.parse(fileData);
     });
+
+    const totalItems = taxPayerList.length;
 
     // apply paging
     const skip = parseInt(offset, 10);
@@ -168,7 +170,19 @@ function list(options = {}) {
       taxPayerList = taxPayerList.slice(skip, skip + take);
     }
 
-    return taxPayerList;
+    const totalPages = take > 0 ? Math.ceil(totalItems / take) : 1;
+    const currentPage = take > 0 ? Math.floor(skip / take) + 1 : 1;
+
+    return {
+      itemList: taxPayerList,
+      pageInfo: {
+        totalItems,
+        pageSize: take,
+        totalPages,
+        currentPage
+      },
+    };
+
   } catch (error) {
     if (error.code === "ENOENT") {
       return [];
@@ -180,7 +194,7 @@ function list(options = {}) {
 // Get tax payer map
 function getTaxPayerMap() {
   const taxPayerMap = {};
-  const taxPayerList = list();
+  const { itemList: taxPayerList } = list({});
   taxPayerList.forEach((taxPayer) => {
     taxPayerMap[taxPayer.id] = taxPayer;
   });

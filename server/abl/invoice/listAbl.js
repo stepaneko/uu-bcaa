@@ -4,7 +4,7 @@ const invoiceDao = require("../../dao/invoice-dao.js");
 const taxPayerDao = require("../../dao/taxPayer-dao.js");
 const openApiSchema = require("../../schema/openapi/schema.json");
 
-const ajv = new Ajv();
+const ajv = new Ajv({ coerceTypes: true, useDefaults: true });
 addFormats(ajv);
 
 const pathItem = openApiSchema.paths["/invoices"];
@@ -47,13 +47,14 @@ async function ListAbl(req, res) {
       });
     }
 
-    const invoiceList = invoiceDao.list(reqParams);
+    const { itemList, pageInfo } = invoiceDao.list(reqParams);
 
     // Get tax payer map to display tax payer name in invoice data
     const taxPayerMap = taxPayerDao.getTaxPayerMap();
 
     res.status(200).json({ 
-      itemList: invoiceList, 
+      itemList,
+      pageInfo,
       taxPayerMap 
     });
   } catch (error) {

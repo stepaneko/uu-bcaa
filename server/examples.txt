@@ -1,14 +1,20 @@
 
 curl -X GET "http://localhost:8888/export/dp?taxPayerId=c36340f150606b623ee2208322592dac&year=2024&month=5"
 
+curl -X GET "http://localhost:8888/export/dp?taxPayerId=c36340f150606b623ee2208322592dac&month=5&year=2024"
+
 curl -X GET "http://localhost:8888/export/kh?taxPayerId=c36340f150606b623ee2208322592dac&year=2024&month=5"
 
 
 *** Tax payer ***
 
-curl -X GET http://localhost:8888/taxpayers/taxpayer/c36340f150606b623ee2208322592dac
+curl -X GET "http://localhost:8888/taxpayers/taxpayer/c36340f150606b623ee2208322592dac"
 
-curl -X GET http://localhost:8888/taxpayers
+curl -X GET "http://localhost:8888/taxpayers"
+
+curl -X GET "http://localhost:8888/taxpayers?limit=10&offset=0"
+
+curl -X GET "http://localhost:8888/taxperiods?taxPayerId=c36340f150606b623ee2208322592dac&limit=10&offset=0"
 
 
 curl -X POST http://localhost:8888/taxpayers/taxpayer \
@@ -31,9 +37,6 @@ curl -X POST http://localhost:8888/taxpayers/taxpayer \
   -H "Content-Type: application/json" \
   -d '{
     "type": "company",
-    "title": "Ing.",
-    "firstName": "Jan",
-    "lastName": "Novák & partners",
     "companyName": "Novák & partners",
     "vatId": "CZ8501011236",
     "street": "Krátká",
@@ -41,6 +44,34 @@ curl -X POST http://localhost:8888/taxpayers/taxpayer \
     "city": "Brno",
     "postalCode": "60200",
     "email": "jan.novak@email.cz",
+    "phoneNumber": "+420987654321"
+  }'
+  
+curl -X POST http://localhost:8888/taxpayers/taxpayer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "company",
+    "companyName": "Dvořák & partners",
+    "vatId": "CZ8501011237",
+    "street": "Bystrozraká",
+    "descriptiveNumber": "456",
+    "city": "Brno",
+    "postalCode": "60200",
+    "email": "jan.dvorak@email.cz",
+    "phoneNumber": "+420987654321"
+  }'
+  
+curl -X POST http://localhost:8888/taxpayers/taxpayer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "company",
+    "companyName": "Chudák & partners",
+    "vatId": "CZ8501011238",
+    "street": "Bystrozraká",
+    "descriptiveNumber": "456",
+    "city": "Brno",
+    "postalCode": "60200",
+    "email": "jan.dvorak@email.cz",
     "phoneNumber": "+420987654321"
   }'
   
@@ -78,14 +109,14 @@ curl -X PUT http://localhost:8888/taxpayers/taxpayer/c36340f150606b623ee22083225
 }'
 
 
-curl -X PUT http://localhost:8888/taxpayers/taxpayer/83d7eaa362d5c4eec45ebe0dae4f278d \
+curl -X PUT http://localhost:8888/taxpayers/taxpayer/82461b57bc2f3e58f1668f7ba7313df5 \
   -H "Content-Type: application/json" \
   -d '{
     "type": "individual",
     "firstName": "Jan",
     "lastName": "Dvořák",
-    "vatId": "CZ8501011234",
-    "street": "Krátká",
+    "vatId": "CZ8501011235",
+    "street": "Široká",
     "descriptiveNumber": "456",
     "city": "Brno",
     "postalCode": "60200",
@@ -93,15 +124,19 @@ curl -X PUT http://localhost:8888/taxpayers/taxpayer/83d7eaa362d5c4eec45ebe0dae4
     "phoneNumber": "+420987654321"
   }'
 
-curl -X DELETE http://localhost:8888/taxpayers/taxpayer/83d7eaa362d5c4eec45ebe0dae4f278d
+curl -X DELETE "http://localhost:8888/taxpayers/taxpayer/83d7eaa362d5c4eec45ebe0dae4f278d"
+
+curl -X DELETE "http://localhost:8888/taxpayers/taxpayer/9695a5dbe75d9bc65715e17b4f645772"
+
+
   
 *** Invoices ***
 
-curl -X GET http://localhost:8888/invoices
+curl -X GET "http://localhost:8888/invoices"
 
-curl -X GET http://localhost:8888/invoices/invoice/57d52ba501931b15f8197611491c47ed
+curl -X GET "http://localhost:8888/invoices/invoice/57d52ba501931b15f8197611491c47ed"
 
-curl -X GET http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee2208322592dac
+curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee2208322592dac"
 
 
  curl -X POST http://localhost:8888/invoice/create \

@@ -15,6 +15,10 @@
       "description": "Operations for managing invoices"
     },
     {
+      "name": "TaxPeriod",
+      "description": "Operations for listing tax periods"
+    },
+    {
       "name": "Export",
       "description": "Operations for exporting tax documents"
     }
@@ -109,9 +113,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TaxPayer"
+                  "type": "object",
+                  "properties": {
+                    "itemList": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TaxPayer"
+                      }
+                    },
+                    "pageInfo": {
+                      "type": "object",
+                      "properties": {
+                        "totalItems": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        },
+                        "currentPage": {
+                          "type": "integer"
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -243,7 +269,7 @@
         "tags": [
           "TaxPayer"
         ],
-        "summary": "Delete a taxpayer",
+        "summary": "Delete a tax payer",
         "operationId": "deleteTaxPayer",
         "responses": {
           "204": {
@@ -310,15 +336,88 @@
         ],
         "summary": "Get list of invoices",
         "operationId": "getInvoicesList",
+        "parameters": [
+          {
+            "name": "taxPayerId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful retrieval",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Invoice"
+                  "type": "object",
+                  "properties": {
+                    "itemList": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Invoice"
+                      }
+                    },
+                    "pageInfo": {
+                      "type": "object",
+                      "properties": {
+                        "totalItems": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        },
+                        "currentPage": {
+                          "type": "integer"
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -385,6 +484,85 @@
         "responses": {
           "204": {
             "description": "Deleted successfully"
+          }
+        }
+      }
+    },
+    "/taxperiods": {
+      "get": {
+        "tags": [
+          "TaxPeriod"
+        ],
+        "summary": "Get tax periods for a tax payer",
+        "operationId": "listTaxPeriods",
+        "parameters": [
+          {
+            "name": "taxPayerId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tax periods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "itemList": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TaxPeriod"
+                      }
+                    },
+                    "pageInfo": {
+                      "type": "object",
+                      "properties": {
+                        "totalItems": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        },
+                        "currentPage": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -611,6 +789,52 @@
             "format": "float"
           }
         }
+      },
+      "TaxPeriod": {
+        "type": "object",
+        "properties": {
+          "taxPayerId": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "month": {
+            "type": "integer"
+          },
+          "outputBase": {
+            "type": "number"
+          },
+          "outputVat": {
+            "type": "number"
+          },
+          "inputBase": {
+            "type": "number"
+          },
+          "inputVat": {
+            "type": "number"
+          },
+          "totalVat": {
+            "type": "number"
+          },
+          "outputBase10k": {
+            "type": "number"
+          },
+          "outputVat10k": {
+            "type": "number"
+          },
+          "inputBase10k": {
+            "type": "number"
+          },
+          "inputVat10k": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "taxPayerId",
+          "year",
+          "month"
+        ]
       },
       "Error": {
         "type": "object",

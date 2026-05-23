@@ -1,10 +1,9 @@
 {
   "type": "individual",
-  "title": "Ing.",
   "firstName": "Jan",
   "lastName": "Dvořák",
   "vatId": "CZ8501011235",
-  "street": "Krátká",
+  "street": "Široká",
   "descriptiveNumber": "456",
   "city": "Brno",
   "postalCode": "60200",

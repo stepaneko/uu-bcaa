@@ -36,7 +36,7 @@ async function CreateAbl(req, res) {
 
     // store invoice to persistent storage
     const invoice = invoiceDao.create(reqParams);
-    invoice.taxPayer = taxPayer; // Připojíme detail poplatníka do odpovědi
+    invoice.taxPayer = taxPayer; // Add tax payer data to the response
 
     // return properly filled output
     res.status(201).json(invoice);

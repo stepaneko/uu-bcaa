@@ -3,7 +3,7 @@ const addFormats = require("ajv-formats").default;
 const taxPayerDao = require("../../dao/taxPayer-dao.js");
 const openApiSchema = require("../../schema/openapi/schema.json");
 
-const ajv = new Ajv();
+const ajv = new Ajv({ coerceTypes: true, useDefaults: true });
 addFormats(ajv);
 
 const pathItem = openApiSchema.paths["/taxpayers"];
@@ -46,10 +46,11 @@ async function ListAbl(req, res) {
       });
     }
 
-    const taxPayerList = taxPayerDao.list(reqParams);
+    const { itemList, pageInfo } = taxPayerDao.list(reqParams);
 
     res.status(200).json({ 
-      itemList: taxPayerList 
+      itemList,
+      pageInfo
     });
   } catch (error) {
     console.error(error);

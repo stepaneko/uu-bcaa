@@ -12,13 +12,13 @@ const operation = pathItem.delete;
 
 const allParameters = [
   ...(pathItem.parameters || []),
-  ...(operation.parameters || [])
+  ...(operation.parameters || []),
 ];
 
 const properties = {};
 const required = [];
 
-allParameters.forEach(param => {
+allParameters.forEach((param) => {
   properties[param.name] = param.schema;
   if (param.required && !required.includes(param.name)) {
     required.push(param.name);
@@ -29,7 +29,7 @@ const schema = {
   type: "object",
   properties,
   required,
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 const validate = ajv.compile(schema);
@@ -44,7 +44,15 @@ async function DeleteAbl(req, res) {
       return res.status(400).json({
         code: "requestIsNotValid",
         message: "Request is not valid",
-        validationError: ajv.errors
+        validationError: ajv.errors,
+      });
+    }
+
+    const existingTaxPayer = taxPayerDao.get(reqParams.id);
+    if (!existingTaxPayer) {
+      return res.status(404).json({
+        code: "taxPayerNotFound",
+        message: `Tax payer with id ${reqParams.id} not found`,
       });
     }
 
@@ -53,15 +61,7 @@ async function DeleteAbl(req, res) {
     if (invoiceList && invoiceList.length > 0) {
       return res.status(400).json({
         code: "taxPayerHasInvoices",
-        message: "Tax payer has related invoices and cannot be deleted"
-      });
-    }
-
-    const existingTaxPayer = taxPayerDao.get(reqParams.id);
-    if (!existingTaxPayer) {
-      return res.status(404).json({
-        code: "taxPayerNotFound",
-        message: `Tax payer with id ${reqParams.id} not found`
+        message: "Tax payer has related invoices and cannot be deleted",
       });
     }
 

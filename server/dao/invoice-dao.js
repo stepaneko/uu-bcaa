@@ -60,7 +60,7 @@ function create(invoice) {
       throw {
         code: "duplicateInvoice",
         message: "Invoice with the given parameters already exists.",
-        knownError: true
+        knownError: true,
       };
     }
 
@@ -89,7 +89,7 @@ function update(invoice) {
       throw {
         code: "duplicateInvoice",
         message: "Invoice update would result in a duplicate.",
-        knownError: true
+        knownError: true,
       };
     }
 
@@ -121,10 +121,10 @@ function list(options = {}) {
 
     const files = fs.readdirSync(invoiceFolderPath);
 
-    const invoiceList = files.map((file) => {
+    let invoiceList = files.map((file) => {
       const fileData = fs.readFileSync(
         path.join(invoiceFolderPath, file),
-        "utf8"
+        "utf8",
       );
       return JSON.parse(fileData);
     });
@@ -132,7 +132,7 @@ function list(options = {}) {
     // Filter by taxPayerId (if provided)
     if (taxPayerId) {
       invoiceList = invoiceList.filter(
-        (invoice) => invoice.taxPayerId === taxPayerId
+        (invoice) => invoice.taxPayerId === taxPayerId,
       );
     }
 
@@ -165,20 +165,38 @@ function list(options = {}) {
     }
 
     // Sort result (from newest invoice to the oldest one)
-    invoiceList.sort((a, b) => new Date(b.taxableDate) - new Date(a.taxableDate));
+    invoiceList.sort(
+      (a, b) => new Date(b.taxableDate) - new Date(a.taxableDate),
+    );
+
+    const totalItems = invoiceList.length;
 
     // Paging applied
     const skip = parseInt(offset, 10);
-    const take = limit ? parseInt(limit, 10) : invoiceList.length;
+    const take = limit ? parseInt(limit, 10) : totalItems;
 
-    if (skip > 0 || take < invoiceList.length) {
+    if (skip > 0 || take < totalItems) {
       invoiceList = invoiceList.slice(skip, skip + take);
     }
 
-    return invoiceList;
+    const totalPages = take > 0 ? Math.ceil(totalItems / take) : 1;
+    const currentPage = take > 0 ? Math.floor(skip / take) + 1 : 1;
+
+    return {
+      itemList: invoiceList,
+      pageInfo: {
+        totalItems,
+        pageSize: take,
+        totalPages,
+        currentPage
+      },
+    };
   } catch (error) {
     if (error.code === "ENOENT") {
-      return [];
+      return { 
+        itemList: [], 
+        pageInfo: { totalItems: 0, pageSize: 0, totalPages: 0, currentPage: 0 } 
+      };
     }
     throw { code: "failedToReadInvoices", message: error.message };
   }
@@ -189,5 +207,5 @@ module.exports = {
   create,
   update,
   remove,
-  list
+  list,
 };

@@ -8,7 +8,7 @@ const invoiceDao = require("../../dao/invoice-dao.js");
 
 const openApiSchema = require("../../schema/openapi/schema.json");
 
-const ajv = new Ajv();
+const ajv = new Ajv({ coerceTypes: true, useDefaults: true });
 addFormats(ajv);
 
 const pathItem = openApiSchema.paths["/export/kh"];
@@ -66,7 +66,7 @@ async function ExportKhAbl(req, res) {
       });
     }
 
-    const invoiceList = invoiceDao.list({ taxPayerId, month, year });
+    const { itemList: invoiceList } = invoiceDao.list({ taxPayerId, month, year });
 
     let vetaA2Xml = "";
     let vetaB2Xml = "";

@@ -1,0 +1,12 @@
+{
+  "type": "company",
+  "companyName": "Dvořák & partners",
+  "vatId": "CZ8501011237",
+  "street": "Bystrozraká",
+  "descriptiveNumber": "456",
+  "city": "Brno",
+  "postalCode": "60200",
+  "email": "jan.dvorak@email.cz",
+  "phoneNumber": "+420987654321",
+  "id": "60b13ac4dba4bdcb5f4c9613471c3cd8"
+}

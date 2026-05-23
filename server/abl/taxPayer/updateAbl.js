@@ -13,15 +13,15 @@ const operation = pathItem.put;
 
 const allParameters = [
   ...(pathItem.parameters || []),
-  ...(operation.parameters || [])
+  ...(operation.parameters || []),
 ];
 
 const properties = { ...baseSchema.properties };
-const required = [ ...(baseSchema.required || []) ];
+const required = [...(baseSchema.required || [])];
 
-allParameters.forEach(param => {
+allParameters.forEach((param) => {
   properties[param.name] = param.schema;
-  
+
   if (param.required && !required.includes(param.name)) {
     required.push(param.name);
   }
@@ -31,7 +31,7 @@ const schema = {
   type: "object",
   properties,
   required,
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 const validate = ajv.compile(schema);
@@ -46,12 +46,23 @@ async function UpdateAbl(req, res) {
       return res.status(400).json({
         code: "requestIsNotValid",
         message: "Request is not valid",
-        validationError: validate.errors
+        validationError: validate.errors,
       });
     }
 
+    const existingTaxPayer = taxPayerDao.get(reqParams.id);
+    if (!existingTaxPayer) {
+      return res.status(404).json({
+        code: "taxPayerNotFound",
+        message: `Tax payer with id ${reqParams.id} not found`,
+      });
+    }
+
+    // Remove whitespace characters
+    if (reqParams.vatId) reqParams.vatId = reqParams.vatId.trim();
+
     const updatedTaxPayer = taxPayerDao.update(reqParams);
-    
+
     if (!updatedTaxPayer) {
       return res.status(404).json({
         code: "taxPayerNotFound",
@@ -62,7 +73,7 @@ async function UpdateAbl(req, res) {
     res.json(updatedTaxPayer);
   } catch (error) {
     console.error(error);
-    
+
     const errorCodes = [
       "duplicateVatId",
       "individualFirstNameMissing",
@@ -70,7 +81,7 @@ async function UpdateAbl(req, res) {
       "individualCompanyNameNotAllowed",
       "companyNameMissing",
       "companyFirstNameNotAllowed",
-      "companyLastNameNotAllowed"
+      "companyLastNameNotAllowed",
     ];
 
     if (errorCodes.includes(error.code)) {
