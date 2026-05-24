@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "fdc262a04eea9b0c4a517ec139b09aee",
+  "type": "received",
+  "number": "20240007",
+  "taxableDate": "2024-05-25",
+  "vatId": "130130130",
+  "name": "Domácí potřeby",
+  "description": "",
+  "price": 150,
+  "vatValue": 31.5,
+  "id": "6f2f44dd6bdb85affffe5d28304853e5"
+}

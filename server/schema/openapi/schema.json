@@ -494,7 +494,7 @@
           "TaxPeriod"
         ],
         "summary": "Get tax periods for a tax payer",
-        "operationId": "listTaxPeriods",
+        "operationId": "getTaxPeriodsList",
         "parameters": [
           {
             "name": "taxPayerId",

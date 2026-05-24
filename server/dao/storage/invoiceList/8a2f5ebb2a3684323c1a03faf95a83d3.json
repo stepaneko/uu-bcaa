@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "fdc262a04eea9b0c4a517ec139b09aee",
+  "type": "issued",
+  "number": "20240001",
+  "taxableDate": "2024-05-01",
+  "vatId": "132132132",
+  "name": "Kartony s.r.o",
+  "description": "Konzultace",
+  "price": 50000,
+  "vatValue": 10500,
+  "id": "8a2f5ebb2a3684323c1a03faf95a83d3"
+}

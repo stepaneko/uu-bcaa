@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "fdc262a04eea9b0c4a517ec139b09aee",
+  "type": "received",
+  "number": "20240005",
+  "taxableDate": "2024-05-24",
+  "vatId": "CZ125126127",
+  "name": "Kancelářské potřeby",
+  "description": "",
+  "price": 1000,
+  "vatValue": 210,
+  "id": "fe9bd1a36d7b32d035fb875a5ede2c37"
+}

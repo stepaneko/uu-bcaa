@@ -107,7 +107,7 @@ function update(taxPayer) {
 
     // vatId must be unique
     if (taxPayer.vatId && taxPayer.vatId !== currentTaxPayer.vatId) {
-      const taxPayerList = list();
+      const { itemList: taxPayerList } = list();
       if (taxPayerList.some((item) => item.vatId === taxPayer.vatId)) {
         throw {
           code: "duplicateVatId",

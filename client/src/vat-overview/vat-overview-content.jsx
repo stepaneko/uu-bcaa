@@ -1,12 +1,15 @@
-import React, { useContext, useState, useEffect, useMemo } from "react";
+// import React, { useContext, useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { TaxPayerModal } from "../tax-payer/tax-payer-modal";
+import { InvoiceModal } from "../invoice/invoice-modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import logo from "./logo.png";
 
-import Alert from "react-bootstrap/Alert";
+/* import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Pagination from "react-bootstrap/Pagination";
-import Table from "react-bootstrap/Table";
+import Table from "react-bootstrap/Table"; */
 
 const API_BASE_URL = "http://localhost:8888";
 
@@ -14,22 +17,98 @@ export default function VatOverviewContent() {
   const [selectedTaxPayer, setSelectedTaxPayer] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState(null);
 
+  const [showTaxPayerModal, setShowTaxPayerModal] = useState(false);
+  const [taxPayerModalData, setTaxPayerModalData] = useState(null);
+  const [refreshTaxPayersTrigger, setRefreshTaxPayersTrigger] = useState(0);
+
+  const [refreshPeriodsTrigger, setRefreshPeriodsTrigger] = useState(0);
+
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceModalData, setInvoiceModalData] = useState(null);
+  const [refreshInvoicesTrigger, setRefreshInvoicesTrigger] = useState(0);
+
+  const [alertData, setAlertData] = useState({
+    show: false,
+    type: "",
+    message: "",
+  });
+
+  const handleShowAlert = (type, message) => {
+    setAlertData({ show: true, type, message });
+    setTimeout(() => {
+      setAlertData({ show: false, type: "", message: "" });
+    }, 5000);
+  };
+
   // Pomocná funkce, která při výběru nového poplatníka skryje/resetuje vybrané období
   const handleTaxPayerSelect = (tp) => {
     setSelectedTaxPayer(tp);
     setSelectedPeriod(null);
   };
 
+  const handleOpenCreateTaxPayerModal = () => {
+    setTaxPayerModalData(null); // Prázdná data znamenají založení nového
+    setShowTaxPayerModal(true);
+  };
+
+  const handleOpenEditTaxPayerModal = (taxPayer) => {
+    setTaxPayerModalData(taxPayer); // Data konkrétního poplatníka pro úpravu
+    setShowTaxPayerModal(true);
+  };
+
+  const handleTaxPayerModalSave = () => {
+    setRefreshTaxPayersTrigger((prev) => prev + 1); // Trigger pro znovunačtení tabulky poplatníků
+  };
+
+  const handleOpenCreateInvoiceModal = () => {
+    setInvoiceModalData(null);
+    setShowInvoiceModal(true);
+  };
+
+  const handleOpenEditInvoiceModal = (invoice) => {
+    setInvoiceModalData(invoice);
+    setShowInvoiceModal(true);
+  };
+
+  const handleInvoiceModalSave = () => {
+    setRefreshInvoicesTrigger((prev) => prev + 1);
+    setRefreshPeriodsTrigger(prev => prev + 1);
+  };
+
   return (
-    <div className="container-fluid py-4">
+    <div className="container-fluid py-4 position-relative">
+      {alertData.show && (
+        <div
+          className={`alert alert-${alertData.type} alert-dismissible fade show shadow`}
+          role="alert"
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            zIndex: 1060, // Zajišťuje, že bude nad modálním oknem i obsahem
+            minWidth: "300px",
+          }}
+        >
+          {alertData.message}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setAlertData({ show: false, type: "", message: "" })}
+            aria-label="Close"
+          ></button>
+        </div>
+      )}
+
       <header className="mb-4">
         <img src={logo} alt="EasyVAT Logo" style={{ height: "160px" }} />
       </header>
 
-      {/* Změna: předáváme novou funkci handleTaxPayerSelect */}
       <TaxPayersSection
         selectedTaxPayer={selectedTaxPayer}
         onSelect={handleTaxPayerSelect}
+        onCreateClick={handleOpenCreateTaxPayerModal}
+        onEditClick={handleOpenEditTaxPayerModal}
+        refreshTrigger={refreshTaxPayersTrigger}
       />
 
       {selectedTaxPayer && (
@@ -37,22 +116,51 @@ export default function VatOverviewContent() {
           taxPayerId={selectedTaxPayer.id}
           selectedPeriod={selectedPeriod}
           onSelect={setSelectedPeriod}
+          refreshTrigger={refreshPeriodsTrigger}
         />
       )}
 
-      {/* ZMĚNA: Sekce Invoices se nyní zobrazí hned po výběru poplatníka (přidáno vyhodnocení bez vybraného období) */}
       {selectedTaxPayer && (
         <InvoicesSection
           taxPayerId={selectedTaxPayer.id}
           period={selectedPeriod}
+          refreshTrigger={refreshInvoicesTrigger}
+          onCreateClick={handleOpenCreateInvoiceModal}
+          onEditClick={handleOpenEditInvoiceModal}
         />
       )}
+
+      <TaxPayerModal
+        show={showTaxPayerModal}
+        taxPayer={taxPayerModalData}
+        onClose={() => setShowTaxPayerModal(false)}
+        onSave={handleTaxPayerModalSave}
+        apiBaseUrl={API_BASE_URL}
+        onShowAlert={handleShowAlert}
+      />
+
+      <InvoiceModal
+        show={showInvoiceModal}
+        invoice={invoiceModalData}
+        taxPayer={selectedTaxPayer}
+        period={selectedPeriod}
+        onClose={() => setShowInvoiceModal(false)}
+        onSave={handleInvoiceModalSave}
+        apiBaseUrl={API_BASE_URL}
+        onShowAlert={handleShowAlert}
+      />
     </div>
   );
 }
 
 // --- KOMPONENTA 1: Tax Payers ---
-function TaxPayersSection({ selectedTaxPayer, onSelect }) {
+function TaxPayersSection({
+  selectedTaxPayer,
+  onSelect,
+  onCreateClick,
+  onEditClick,
+  refreshTrigger
+}) {
   const [taxPayers, setTaxPayers] = useState([]);
   const [limit, setLimit] = useState(3);
   const [page, setPage] = useState(1);
@@ -71,7 +179,7 @@ function TaxPayersSection({ selectedTaxPayer, onSelect }) {
         setTotalCount(total);
       })
       .catch((err) => console.error("Chyba při načítání poplatníků:", err));
-  }, [page, limit]);
+  }, [page, limit, refreshTrigger]);
 
   const formatName = (tp) => {
     if (tp.type === "individual") {
@@ -88,7 +196,9 @@ function TaxPayersSection({ selectedTaxPayer, onSelect }) {
     <section className="mb-5">
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h2>Tax payers</h2>
-        <button className="btn btn-primary">Create</button>
+        <button className="btn btn-primary" onClick={onCreateClick}>
+          Create
+        </button>
       </div>
       <div className="table-responsive">
         <table className="table table-borderless table-hover align-middle">
@@ -122,10 +232,19 @@ function TaxPayersSection({ selectedTaxPayer, onSelect }) {
                 <td>{tp.email}</td>
                 <td>{tp.phoneNumber}</td>
                 <td className="text-end">
-                  <button className="btn btn-sm btn-outline-secondary me-2">
+                  <button
+                    className="btn btn-sm btn-outline-secondary me-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditClick(tp);
+                    }}
+                  >
                     Edit
                   </button>
-                  <button className="btn btn-sm btn-outline-danger">
+                  <button
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     Delete
                   </button>
                 </td>
@@ -146,7 +265,7 @@ function TaxPayersSection({ selectedTaxPayer, onSelect }) {
 }
 
 // --- KOMPONENTA 2: Tax Periods ---
-function TaxPeriodsSection({ taxPayerId, selectedPeriod, onSelect }) {
+function TaxPeriodsSection({ taxPayerId, selectedPeriod, onSelect, refreshTrigger }) {
   const [periods, setPeriods] = useState([]);
   const [limit, setLimit] = useState(3);
   const [page, setPage] = useState(1);
@@ -156,7 +275,7 @@ function TaxPeriodsSection({ taxPayerId, selectedPeriod, onSelect }) {
   useEffect(() => {
     const offset = (page - 1) * limit;
     fetch(
-      `${API_BASE_URL}/taxperiods?taxPayerId=${taxPayerId}&limit=${limit}&offset=${offset}`,
+      `${API_BASE_URL}/taxperiods?taxPayerId=${taxPayerId}&limit=${limit}&offset=${offset}`, { cache: 'no-store' }
     )
       .then((res) => res.json())
       .then((data) => {
@@ -168,7 +287,7 @@ function TaxPeriodsSection({ taxPayerId, selectedPeriod, onSelect }) {
         setTotalCount(total);
       })
       .catch((err) => console.error("Chyba při načítání období:", err));
-  }, [taxPayerId, page, limit]);
+  }, [taxPayerId, page, limit, refreshTrigger]);
 
   // Pomocná funkce pro formátování měny
   const formatCurrency = (val) =>
@@ -293,7 +412,13 @@ function TaxPeriodsSection({ taxPayerId, selectedPeriod, onSelect }) {
   );
 }
 
-function InvoicesSection({ taxPayerId, period }) {
+function InvoicesSection({
+  taxPayerId,
+  period,
+  onCreateClick,
+  onEditClick,
+  refreshTrigger
+}) {
   const [invoices, setInvoices] = useState([]);
 
   useEffect(() => {
@@ -304,14 +429,14 @@ function InvoicesSection({ taxPayerId, period }) {
     }
 
     fetch(
-      `${API_BASE_URL}/invoices?taxPayerId=${taxPayerId}&month=${period.month}&year=${period.year}`,
+      `${API_BASE_URL}/invoices?taxPayerId=${taxPayerId}&month=${period.month}&year=${period.year}`, { cache: 'no-store' }
     )
       .then((res) => res.json())
       .then((data) => {
         setInvoices(data.itemList || []);
       })
       .catch((err) => console.error("Chyba při načítání faktur:", err));
-  }, [taxPayerId, period]);
+  }, [taxPayerId, period, refreshTrigger]);
 
   const sortedInvoices = useMemo(() => {
     return [...invoices].sort((a, b) => {
@@ -334,7 +459,9 @@ function InvoicesSection({ taxPayerId, period }) {
       {/* Tlačítko Create a nadpis jsou zobrazeny vždy */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h2>Invoices</h2>
-        <button className="btn btn-primary">Create</button>
+        <button className="btn btn-primary" onClick={onCreateClick}>
+          Create
+        </button>
       </div>
       <div className="table-responsive">
         <table className="table table-borderless table-hover align-middle">
@@ -387,10 +514,10 @@ function InvoicesSection({ taxPayerId, period }) {
                   <td className="text-end">{formatCurrency(inv.price)}</td>
                   <td className="text-end">{formatCurrency(inv.vatValue)}</td>
                   <td className="text-end">
-                    <button className="btn btn-sm btn-outline-secondary me-2">
+                    <button className="btn btn-sm btn-outline-secondary me-2" onClick={(e) => { e.stopPropagation(); onEditClick(inv); }}>
                       Edit
                     </button>
-                    <button className="btn btn-sm btn-outline-danger">
+                    <button className="btn btn-sm btn-outline-danger" onClick={(e) => e.stopPropagation()}>
                       Delete
                     </button>
                   </td>

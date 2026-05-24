@@ -53,7 +53,7 @@ function get(invoiceId) {
 // Write an invoice to a file
 function create(invoice) {
   try {
-    const invoiceList = list();
+    const { itemList: invoiceList } = list();
 
     // Check duplicity before creation
     if (isDuplicate(invoiceList, invoice)) {
@@ -82,7 +82,7 @@ function update(invoice) {
     if (!currentInvoice) return null;
 
     const newInvoice = { ...currentInvoice, ...invoice };
-    const invoiceList = list();
+    const { itemList: invoiceList } = list();
 
     // Check duplicity before update
     if (isDuplicate(invoiceList, newInvoice, invoice.id)) {

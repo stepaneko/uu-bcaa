@@ -136,10 +136,10 @@ curl -X GET "http://localhost:8888/invoices"
 
 curl -X GET "http://localhost:8888/invoices/invoice/57d52ba501931b15f8197611491c47ed"
 
-curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee2208322592dac"
+curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee2208322592dac&year=2024&month=5"
 
 
- curl -X POST http://localhost:8888/invoice/create \
+ curl -X POST http://localhost:8888/invoices/invoice \
   -H "Content-Type: application/json" \
   -d '{
     "taxPayerId": "c36340f150606b623ee2208322592dac",
@@ -153,7 +153,7 @@ curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee220832
     "vatValue": 2100.0
   }'
   
-  curl -X POST http://localhost:8888/invoice/create \
+  curl -X POST http://localhost:8888/invoices/invoice \
   -H "Content-Type: application/json" \
   -d '{
     "taxPayerId": "c36340f150606b623ee2208322592dac",
@@ -167,7 +167,7 @@ curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee220832
     "vatValue": 1050.0
   }'
   
-  curl -X POST http://localhost:8888/invoice/create \
+  curl -X POST http://localhost:8888/invoices/invoice \
   -H "Content-Type: application/json" \
   -d '{
     "taxPayerId": "c36340f150606b623ee2208322592dac",
@@ -181,7 +181,7 @@ curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee220832
     "vatValue": 3150.0
   }'
   
-  curl -X POST http://localhost:8888/invoice/create \
+  curl -X POST http://localhost:8888/invoices/invoice \
   -H "Content-Type: application/json" \
   -d '{
     "taxPayerId": "c36340f150606b623ee2208322592dac",
@@ -195,7 +195,7 @@ curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee220832
     "vatValue": 4200.0
   }'
   
-  curl -X POST http://localhost:8888/invoice/create \
+  curl -X POST http://localhost:8888/invoices/invoice \
   -H "Content-Type: application/json" \
   -d '{
     "taxPayerId": "c36340f150606b623ee2208322592dac",
@@ -207,4 +207,18 @@ curl -X GET "http://localhost:8888/invoices?taxPayerId=c36340f150606b623ee220832
     "description": "Roční licence k aplikaci EasyVAT",
     "price": 8000.0,
     "vatValue": 1680.0
+  }'
+  
+  curl -X POST http://localhost:8888/invoices/invoice \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taxPayerId": "c36340f150606b623ee2208322592dac",
+    "type": "issued",
+    "number": "2024003",
+    "vatId": "CZ66778899",
+    "name": "Klient Delta  s.r.o.",
+    "taxableDate": "2024-06-06",
+    "description": "IT konzultace a analýza",
+    "price": 25000.0,
+    "vatValue": 5250.0
   }'
