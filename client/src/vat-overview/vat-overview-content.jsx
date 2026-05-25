@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { TaxPayerModal } from "../tax-payer/tax-payer-modal";
 import { InvoiceModal } from "../invoice/invoice-modal";
+import { DeleteConfirmModal } from "../common/delete-confirm-modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import logo from "./logo.png";
 
@@ -19,12 +20,14 @@ export default function VatOverviewContent() {
 
   const [showTaxPayerModal, setShowTaxPayerModal] = useState(false);
   const [taxPayerModalData, setTaxPayerModalData] = useState(null);
+  const [deleteTaxPayerData, setDeleteTaxPayerData] = useState(null);
   const [refreshTaxPayersTrigger, setRefreshTaxPayersTrigger] = useState(0);
 
   const [refreshPeriodsTrigger, setRefreshPeriodsTrigger] = useState(0);
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoiceModalData, setInvoiceModalData] = useState(null);
+  const [deleteInvoiceData, setDeleteInvoiceData] = useState(null);
   const [refreshInvoicesTrigger, setRefreshInvoicesTrigger] = useState(0);
 
   const [alertData, setAlertData] = useState({
@@ -60,6 +63,33 @@ export default function VatOverviewContent() {
     setRefreshTaxPayersTrigger((prev) => prev + 1); // Trigger pro znovunačtení tabulky poplatníků
   };
 
+  const handleExecuteDeleteTaxPayer = async () => {
+    if (!deleteTaxPayerData) return;
+
+    const url = `${API_BASE_URL}/taxpayers/taxpayer/${deleteTaxPayerData.id}`;
+    const defaultError = "An error occurred when deleting the tax payer";
+
+    try {
+      const response = await fetch(url, { method: "DELETE" });
+      if (response.ok) {
+        // Pokud mažeme aktuálně vybraného poplatníka, zrušíme jeho výběr
+        if (selectedTaxPayer?.id === deleteTaxPayerData.id) {
+          setSelectedTaxPayer(null);
+          setSelectedPeriod(null);
+        }
+        setRefreshTaxPayersTrigger((prev) => prev + 1);
+        handleShowAlert("success", "Tax payer has been deleted");
+      } else {
+        const data = await response.json().catch(() => ({}));
+        handleShowAlert("danger", data.message || defaultError);
+      }
+    } catch (err) {
+      handleShowAlert("danger", defaultError);
+    } finally {
+      setDeleteTaxPayerData(null); // Zavře modál
+    }
+  };
+
   const handleOpenCreateInvoiceModal = () => {
     setInvoiceModalData(null);
     setShowInvoiceModal(true);
@@ -72,7 +102,30 @@ export default function VatOverviewContent() {
 
   const handleInvoiceModalSave = () => {
     setRefreshInvoicesTrigger((prev) => prev + 1);
-    setRefreshPeriodsTrigger(prev => prev + 1);
+    setRefreshPeriodsTrigger((prev) => prev + 1);
+  };
+
+  const handleExecuteDeleteInvoice = async () => {
+    if (!deleteInvoiceData) return;
+
+    const url = `${API_BASE_URL}/invoices/invoice/${deleteInvoiceData.id}`;
+    const defaultError = "An error occurred when deleting the invoice";
+
+    try {
+      const response = await fetch(url, { method: "DELETE" });
+      if (response.ok) {
+        setRefreshInvoicesTrigger((prev) => prev + 1);
+        setRefreshPeriodsTrigger((prev) => prev + 1); // Aktualizuje i součty v Tax periods
+        handleShowAlert("success", "Invoice has been deleted");
+      } else {
+        const data = await response.json().catch(() => ({}));
+        handleShowAlert("danger", data.message || defaultError);
+      }
+    } catch (err) {
+      handleShowAlert("danger", defaultError);
+    } finally {
+      setDeleteInvoiceData(null); // Zavře modál
+    }
   };
 
   return (
@@ -108,6 +161,7 @@ export default function VatOverviewContent() {
         onSelect={handleTaxPayerSelect}
         onCreateClick={handleOpenCreateTaxPayerModal}
         onEditClick={handleOpenEditTaxPayerModal}
+        onDeleteClick={(tp) => setDeleteTaxPayerData(tp)}
         refreshTrigger={refreshTaxPayersTrigger}
       />
 
@@ -124,9 +178,10 @@ export default function VatOverviewContent() {
         <InvoicesSection
           taxPayerId={selectedTaxPayer.id}
           period={selectedPeriod}
-          refreshTrigger={refreshInvoicesTrigger}
           onCreateClick={handleOpenCreateInvoiceModal}
           onEditClick={handleOpenEditInvoiceModal}
+          onDeleteClick={(inv) => setDeleteInvoiceData(inv)}
+          refreshTrigger={refreshInvoicesTrigger}
         />
       )}
 
@@ -149,6 +204,26 @@ export default function VatOverviewContent() {
         apiBaseUrl={API_BASE_URL}
         onShowAlert={handleShowAlert}
       />
+
+      <DeleteConfirmModal
+        show={!!deleteTaxPayerData}
+        title="Delete tax payer"
+        message={`Are you sure you want to delete tax payer ${
+          deleteTaxPayerData?.type === "individual"
+            ? `${deleteTaxPayerData.title || ""} ${deleteTaxPayerData.firstName || ""} ${deleteTaxPayerData.lastName || ""}`.trim()
+            : deleteTaxPayerData?.companyName || ""
+        }?`}
+        onClose={() => setDeleteTaxPayerData(null)}
+        onConfirm={handleExecuteDeleteTaxPayer}
+      />
+
+      <DeleteConfirmModal
+        show={!!deleteInvoiceData}
+        title="Delete invoice"
+        message={`Are you sure you want to delete invoice ${deleteInvoiceData?.number || ""}?`}
+        onClose={() => setDeleteInvoiceData(null)}
+        onConfirm={handleExecuteDeleteInvoice}
+      />
     </div>
   );
 }
@@ -159,7 +234,8 @@ function TaxPayersSection({
   onSelect,
   onCreateClick,
   onEditClick,
-  refreshTrigger
+  onDeleteClick,
+  refreshTrigger,
 }) {
   const [taxPayers, setTaxPayers] = useState([]);
   const [limit, setLimit] = useState(3);
@@ -243,7 +319,7 @@ function TaxPayersSection({
                   </button>
                   <button
                     className="btn btn-sm btn-outline-danger"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); onDeleteClick(tp); }}
                   >
                     Delete
                   </button>
@@ -265,7 +341,12 @@ function TaxPayersSection({
 }
 
 // --- KOMPONENTA 2: Tax Periods ---
-function TaxPeriodsSection({ taxPayerId, selectedPeriod, onSelect, refreshTrigger }) {
+function TaxPeriodsSection({
+  taxPayerId,
+  selectedPeriod,
+  onSelect,
+  refreshTrigger,
+}) {
   const [periods, setPeriods] = useState([]);
   const [limit, setLimit] = useState(3);
   const [page, setPage] = useState(1);
@@ -275,7 +356,8 @@ function TaxPeriodsSection({ taxPayerId, selectedPeriod, onSelect, refreshTrigge
   useEffect(() => {
     const offset = (page - 1) * limit;
     fetch(
-      `${API_BASE_URL}/taxperiods?taxPayerId=${taxPayerId}&limit=${limit}&offset=${offset}`, { cache: 'no-store' }
+      `${API_BASE_URL}/taxperiods?taxPayerId=${taxPayerId}&limit=${limit}&offset=${offset}`,
+      { cache: "no-store" },
     )
       .then((res) => res.json())
       .then((data) => {
@@ -417,7 +499,8 @@ function InvoicesSection({
   period,
   onCreateClick,
   onEditClick,
-  refreshTrigger
+  onDeleteClick,
+  refreshTrigger,
 }) {
   const [invoices, setInvoices] = useState([]);
 
@@ -429,7 +512,8 @@ function InvoicesSection({
     }
 
     fetch(
-      `${API_BASE_URL}/invoices?taxPayerId=${taxPayerId}&month=${period.month}&year=${period.year}`, { cache: 'no-store' }
+      `${API_BASE_URL}/invoices?taxPayerId=${taxPayerId}&month=${period.month}&year=${period.year}`,
+      { cache: "no-store" },
     )
       .then((res) => res.json())
       .then((data) => {
@@ -514,10 +598,19 @@ function InvoicesSection({
                   <td className="text-end">{formatCurrency(inv.price)}</td>
                   <td className="text-end">{formatCurrency(inv.vatValue)}</td>
                   <td className="text-end">
-                    <button className="btn btn-sm btn-outline-secondary me-2" onClick={(e) => { e.stopPropagation(); onEditClick(inv); }}>
+                    <button
+                      className="btn btn-sm btn-outline-secondary me-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditClick(inv);
+                      }}
+                    >
                       Edit
                     </button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={(e) => { e.stopPropagation(); onDeleteClick(inv); }}
+                    >
                       Delete
                     </button>
                   </td>

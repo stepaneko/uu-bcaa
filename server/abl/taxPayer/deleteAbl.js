@@ -56,8 +56,8 @@ async function DeleteAbl(req, res) {
       });
     }
 
-    // Referential integrity check: are there invoces assigned to this tax payer?
-    const invoiceList = invoiceDao.list({ taxPayerId: reqParams.id });
+    // Referential integrity check: are there invoices assigned to this tax payer?
+    const { itemList: invoiceList } = invoiceDao.list({ taxPayerId: reqParams.id });
     if (invoiceList && invoiceList.length > 0) {
       return res.status(400).json({
         code: "taxPayerHasInvoices",
