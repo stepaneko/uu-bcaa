@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "574fd3fe49f03ac1a35a8c07e6bfab7b",
+  "type": "received",
+  "number": "1294341426",
+  "taxableDate": "2026-02-22",
+  "vatId": "64949681",
+  "name": "T-Mobile Czech Republic a.s.",
+  "description": "Vyúčtování služeb",
+  "price": 925.2,
+  "vatValue": 194.29,
+  "id": "ce0c10b3c30d32f5c48cd0053cc9c64a"
+}

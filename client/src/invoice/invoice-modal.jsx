@@ -22,7 +22,7 @@ export function InvoiceModal({
 
   const defaultFormState = {
     taxPayerId: taxPayer?.id || "",
-    type: "issued", // Výchozí: Issued (Vydaná)
+    type: "received", // Default: Received
     number: "",
     taxableDate: getDefaultDate(),
     vatId: "",
@@ -47,7 +47,6 @@ export function InvoiceModal({
     }
   }, [show, invoice, taxPayer]);
 
-  // Výpočet kalkulované DPH (např. 21%) pro informativní pole
   const calculatedVat = useMemo(() => {
     const p = parseFloat(formData.price);
     return isNaN(p)
@@ -137,7 +136,7 @@ export function InvoiceModal({
           </div>
 
           <div className="modal-body p-4">
-            {/* SEKCE TAX PAYER (READ-ONLY) */}
+            {/* Tax payer setion is read-only */}
             <div className="bg-light p-3 rounded mb-4 border">
               <small className="text-muted d-block mb-2 fw-bold text-uppercase">
                 Tax payer
@@ -204,7 +203,7 @@ export function InvoiceModal({
               </div>
             </div>
 
-            {/* SEKCE INVOICE (EDITABLE) */}
+            {/* Invoice section is editable */}
             <div className="row g-3 mb-3">
               <div className="col-md-4">
                 <label className="form-label">

@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "574fd3fe49f03ac1a35a8c07e6bfab7b",
+  "type": "received",
+  "number": "5183471983",
+  "taxableDate": "2026-01-10",
+  "vatId": "47114983",
+  "name": "Česká pošta s.p.",
+  "description": "Kvalifikovaný certifikát pro podpis",
+  "price": 909.09,
+  "vatValue": 190.91,
+  "id": "71b0a58d1a659421d709ece4e39f9650"
+}

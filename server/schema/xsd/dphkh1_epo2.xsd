@@ -169,8 +169,16 @@
                 </xs:complexType>
               </xs:element>
 
-              <xs:element maxOccurs="unbounded" minOccurs="0" name="VetaA2">
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="VetaA4">
                 <xs:complexType>
+                  <xs:attribute name="c_radku" use="optional">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:decimal">
+                        <xs:totalDigits value="9"/>
+                        <xs:fractionDigits value="0"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
                   <xs:attribute name="dic_odb" use="optional">
                     <xs:simpleType>
                       <xs:restriction base="xs:string">
@@ -195,6 +203,14 @@
 
               <xs:element maxOccurs="unbounded" minOccurs="0" name="VetaB2">
                 <xs:complexType>
+                  <xs:attribute name="c_radku" use="optional">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:decimal">
+                        <xs:totalDigits value="9"/>
+                        <xs:fractionDigits value="0"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>                
                   <xs:attribute name="dic_dod" use="optional">
                     <xs:simpleType>
                       <xs:restriction base="xs:string">
@@ -214,6 +230,27 @@
                   <xs:attribute name="dppd" type="dateInMultiFormat" use="optional" />
                   <xs:attribute name="zakl_dane1" type="decimalAmount" use="optional" />
                   <xs:attribute name="dan1" type="decimalAmount" use="optional" />
+                </xs:complexType>
+              </xs:element>
+
+              <xs:element maxOccurs="1" minOccurs="0" name="VetaB3">
+                <xs:complexType>
+                  <xs:attribute name="zakl_dane1" use="optional">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:decimal">
+                        <xs:totalDigits value="17"/>
+                        <xs:fractionDigits value="2"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                  <xs:attribute name="dan1" use="optional">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:decimal">
+                        <xs:totalDigits value="17"/>
+                        <xs:fractionDigits value="2"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
                 </xs:complexType>
               </xs:element>
 

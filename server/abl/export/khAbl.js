@@ -66,27 +66,46 @@ async function ExportKhAbl(req, res) {
       });
     }
 
-    const { itemList: invoiceList } = invoiceDao.list({ taxPayerId, month, year });
+    const { itemList: invoiceList } = invoiceDao.list({
+      taxPayerId,
+      month,
+      year,
+    });
 
-    let vetaA2Xml = "";
+    let vetaA4Xml = "";
     let vetaB2Xml = "";
+    let c_radku_A4 = 0;
+    let c_radku_B2 = 0;
     let obrat23 = 0;
     let dan23 = 0;
     let pln23 = 0;
     let odp_tuz23_nar = 0;
+    let zakl_dane1 = 0;
+    let dan1 = 0;
 
     invoiceList.forEach((inv) => {
       const dppd = formatDate(inv.taxableDate);
       const base = inv.price || 0;
       const vat = inv.vatValue || 0;
+      const totalAmount = base + vat;
       if (inv.type === "issued") {
+        c_radku_A4++;
         obrat23 += base;
         dan23 += vat;
-        vetaA2Xml += `\n    <VetaA2 dic_odb="${inv.vatId || ""}" c_evid_dd="${inv.number || ""}" dppd="${dppd}" zakl_dane1="${base.toFixed(2)}" dan1="${vat.toFixed(2)}" />`;
+        if (totalAmount >= 10000) {
+          vetaA4Xml += `\n    <VetaA4 c_radku="${c_radku_A4}" dic_odb="${inv.vatId || ""}" c_evid_dd="${inv.number || ""}" dppd="${dppd}" zakl_dane1="${base.toFixed(2)}" dan1="${vat.toFixed(2)}" />`;
+        }
       } else {
+        c_radku_B2++;
         pln23 += base;
         odp_tuz23_nar += vat;
-        vetaB2Xml += `\n    <VetaB2 dic_dod="${inv.vatId || ""}" c_evid_dd="${inv.number || ""}" dppd="${dppd}" zakl_dane1="${base.toFixed(2)}" dan1="${vat.toFixed(2)}" />`;
+        if (totalAmount >= 10000) {
+          vetaB2Xml += `\n    <VetaB2 c_radku="${c_radku_B2}" dic_dod="${inv.vatId || ""}" c_evid_dd="${inv.number || ""}" dppd="${dppd}" zakl_dane1="${base.toFixed(2)}" dan1="${vat.toFixed(2)}" />`;
+        }
+      }
+      if (totalAmount < 10000) {
+        zakl_dane1 += base;
+        dan1 += vat;
       }
     });
 
@@ -96,7 +115,8 @@ async function ExportKhAbl(req, res) {
 <Pisemnost nazevSW="EasyVAT" verzeSW="1.0.0">
   <DPHKH1>
     <VetaD k_uladis="DPH" dokument="KH1" rok="${year}" mesic="${parseInt(month)}" d_poddp="${formatDate(new Date())}" />
-    <VetaP c_ufo="451" dic="${dic_numeric}" jmeno="${taxPayer.firstName || ""}" prijmeni="${taxPayer.lastName || ""}" naz_obce="${taxPayer.city || ""}" ulice="${taxPayer.street || ""}" c_pop="${taxPayer.descriptiveNumber || ""}" c_orient="${taxPayer.referenceNumber || ""}" psc="${taxPayer.postalCode || ""}" stat="ČESKÁ REPUBLIKA" c_telef="${taxPayer.phoneNumber || ""}" email="${taxPayer.email || ""}" sest_jmeno="${taxPayer.firstName || ""}" sest_prijmeni="${taxPayer.lastName || ""}" />${vetaA2Xml}${vetaB2Xml}
+    <VetaP c_ufo="451" dic="${dic_numeric}" jmeno="${taxPayer.firstName || ""}" prijmeni="${taxPayer.lastName || ""}" naz_obce="${taxPayer.city || ""}" ulice="${taxPayer.street || ""}" c_pop="${taxPayer.descriptiveNumber || ""}" c_orient="${taxPayer.referenceNumber || ""}" psc="${taxPayer.postalCode || ""}" stat="ČESKÁ REPUBLIKA" c_telef="${taxPayer.phoneNumber || ""}" email="${taxPayer.email || ""}" sest_jmeno="${taxPayer.firstName || ""}" sest_prijmeni="${taxPayer.lastName || ""}" />${vetaA4Xml}${vetaB2Xml}
+    <VetaB3 zakl_dane1="${zakl_dane1.toFixed(2)}" dan1="${dan1.toFixed(2)}" />
     <VetaC obrat23="${obrat23.toFixed(2)}" dan23="${dan23.toFixed(2)}" pln23="${pln23.toFixed(2)}" odp_tuz23_nar="${odp_tuz23_nar.toFixed(2)}" />
   </DPHKH1>
 </Pisemnost>`;

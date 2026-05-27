@@ -25,17 +25,15 @@ export function DeleteConfirmModal({
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content shadow">
-          {/* Hlavička modálu */}
+
           <div className="modal-header text-white bg-danger">
             <h5 className="modal-title fw-bold">{title}</h5>
           </div>
 
-          {/* Tělo modálu */}
           <div className="modal-body p-4">
             <p className="mb-0 fs-5">{message}</p>
           </div>
 
-          {/* Patička s tlačítky */}
           <div className="modal-footer bg-white border-top-0 pt-0">
             <button
               className="btn btn-danger px-4"

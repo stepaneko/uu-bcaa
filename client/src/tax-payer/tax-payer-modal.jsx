@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-// Pomocná komponenta pro zobrazení červené hvězdičky u povinných polí
+// Red mark for mandatory fields
 const RequiredMark = () => <span className="text-danger ms-1">*</span>;
 
 export function TaxPayerModal({
@@ -11,9 +11,9 @@ export function TaxPayerModal({
   apiBaseUrl,
   onShowAlert,
 }) {
-  // Výchozí stav formuláře
+
   const defaultFormState = {
-    type: "individual", // V UI reprezentováno jako 'I', na server posíláme 'individual'
+    type: "individual",
     title: "",
     firstName: "",
     lastName: "",
@@ -32,7 +32,6 @@ export function TaxPayerModal({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Inicializace dat při otevření modálu (buď prázdný formulář nebo data pro úpravu)
   useEffect(() => {
     if (show) {
       setFormData(taxPayer || defaultFormState);
@@ -51,7 +50,7 @@ export function TaxPayerModal({
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
-      // Pokud měníme typ poplatníka, vymažeme ihned irelevantní pole
+      // If tax payer type is changed, irrelevant fields are emptied
       if (name === "type") {
         if (value === "individual") {
           newData.companyName = "";
@@ -73,7 +72,7 @@ export function TaxPayerModal({
     const newErrors = {};
     const requiredMsg = "This field is required";
 
-    // Povinná pole podle schématu a návrhu
+    // Mandatory fields
     if (!formData.vatId) newErrors.vatId = requiredMsg;
     if (!formData.street) newErrors.street = requiredMsg;
     if (!formData.descriptiveNumber) newErrors.descriptiveNumber = requiredMsg;
@@ -82,7 +81,7 @@ export function TaxPayerModal({
     if (!formData.email) newErrors.email = requiredMsg;
     if (!formData.phoneNumber) newErrors.phoneNumber = requiredMsg;
 
-    // Logika povinnosti jmen na základě typu
+    // Mandatory fields according to tax payer type
     if (isIndividual) {
       if (!formData.firstName) newErrors.firstName = requiredMsg;
       if (!formData.lastName) newErrors.lastName = requiredMsg;
@@ -131,17 +130,15 @@ export function TaxPayerModal({
       if (response.ok) {
         onSave();
         onClose();
-        onShowAlert("success", successMsg); // Úspěšný alert
+        onShowAlert("success", successMsg);
       } else {
         let errorMsg = defaultErrorMsg;
         try {
-          // Zkusíme vytáhnout message ze serveru
           const errorData = await response.json();
           if (errorData && errorData.message) {
             errorMsg = errorData.message;
           }
         } catch (e) {
-          // Pokud odpověď není platný JSON, použijeme výchozí zprávu
         }
         onShowAlert("danger", errorMsg); // Chybový alert
       }
@@ -160,7 +157,6 @@ export function TaxPayerModal({
     >
       <div className="modal-dialog modal-lg modal-dialog-centered">
         <div className="modal-content shadow">
-          {/* Hlavička modálu */}
           <div
             className="modal-header text-white"
             style={{ backgroundColor: "#458ccf" }}
@@ -168,9 +164,7 @@ export function TaxPayerModal({
             <h5 className="modal-title fw-bold">Tax payer</h5>
           </div>
 
-          {/* Tělo modálu */}
           <div className="modal-body p-4">
-            {/* 1. Řádek: Type, Title, First name, Last name */}
             <div className="row mb-3 align-items-end">
               <div className="col-md-2">
                 <label className="form-label">
@@ -232,7 +226,6 @@ export function TaxPayerModal({
               </div>
             </div>
 
-            {/* 2. Řádek: Company name, VAT ID */}
             <div className="row mb-3">
               <div className="col-md-6">
                 <label className="form-label">
@@ -268,7 +261,6 @@ export function TaxPayerModal({
               </div>
             </div>
 
-            {/* 3. Řádek: Street, Desc no., Ref no. */}
             <div className="row mb-3">
               <div className="col-md-6">
                 <label className="form-label">
@@ -316,7 +308,6 @@ export function TaxPayerModal({
               </div>
             </div>
 
-            {/* 4. Řádek: City, Postal code */}
             <div className="row mb-3">
               <div className="col-md-6">
                 <label className="form-label">
@@ -352,7 +343,6 @@ export function TaxPayerModal({
               </div>
             </div>
 
-            {/* 5. Řádek: E-mail, Phone number */}
             <div className="row mb-4">
               <div className="col-md-6">
                 <label className="form-label">
@@ -392,7 +382,6 @@ export function TaxPayerModal({
             </div>
           </div>
 
-          {/* Patička s tlačítky */}
           <div className="modal-footer bg-white border-top-0 pt-0">
             <button
               className="btn text-white px-4"

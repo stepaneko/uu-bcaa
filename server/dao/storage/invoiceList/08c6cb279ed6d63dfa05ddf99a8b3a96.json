@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "574fd3fe49f03ac1a35a8c07e6bfab7b",
+  "type": "received",
+  "number": "2513919",
+  "taxableDate": "2026-02-22",
+  "vatId": "15890554",
+  "name": "Shell Czech Republic, a.s.",
+  "description": "Natural FuelSave",
+  "price": 1212.23,
+  "vatValue": 254.57,
+  "id": "08c6cb279ed6d63dfa05ddf99a8b3a96"
+}

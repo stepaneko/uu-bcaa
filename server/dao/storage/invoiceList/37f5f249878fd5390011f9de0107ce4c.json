@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "574fd3fe49f03ac1a35a8c07e6bfab7b",
+  "type": "issued",
+  "number": "20260002",
+  "taxableDate": "2026-02-28",
+  "vatId": "27270599",
+  "name": "SOITRON s.r.o.",
+  "description": "Dodávka konzultačních, analytických a implementačních služeb pro zákazníka HCLTech",
+  "price": 261000,
+  "vatValue": 54810,
+  "id": "37f5f249878fd5390011f9de0107ce4c"
+}

@@ -1,0 +1,12 @@
+{
+  "taxPayerId": "574fd3fe49f03ac1a35a8c07e6bfab7b",
+  "type": "received",
+  "number": "9906003200",
+  "taxableDate": "2026-04-02",
+  "vatId": "45789584",
+  "name": "Auto Jarov, s.r.o.",
+  "description": "Výměna kol",
+  "price": 2078.4,
+  "vatValue": 436.48,
+  "id": "6d270afe0e776f9c1809741e250fe260"
+}
