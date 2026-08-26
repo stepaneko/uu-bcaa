@@ -53,7 +53,7 @@ async function UpdateAbl(req, res) {
     }
 
     // check if new taxPayerId exists
-    const taxPayer = taxPayerDao.get(reqParams.taxPayerId);
+    const taxPayer = await taxPayerDao.get(reqParams.taxPayerId);
     if (!taxPayer) {
       return res.status(400).json({
         code: "taxPayerDoesNotExist",
@@ -61,7 +61,7 @@ async function UpdateAbl(req, res) {
       });
     }
 
-    const updatedInvoice = invoiceDao.update(reqParams);
+    const updatedInvoice = await invoiceDao.update(reqParams);
 
     if (!updatedInvoice) {
       return res.status(404).json({

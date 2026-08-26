@@ -47,7 +47,7 @@ async function GetAbl(req, res) {
       });
     }
 
-    const invoice = invoiceDao.get(reqParams.id);
+    const invoice = await invoiceDao.get(reqParams.id);
     if (!invoice) {
       return res.status(404).json({
         code: "invoiceNotFound",
@@ -56,7 +56,7 @@ async function GetAbl(req, res) {
     }
 
     // Get tax payer owning the invoice
-    const taxPayer = taxPayerDao.get(invoice.taxPayerId);
+    const taxPayer = await taxPayerDao.get(invoice.taxPayerId);
     invoice.taxPayer = taxPayer;
 
     res.status(200).json(invoice);

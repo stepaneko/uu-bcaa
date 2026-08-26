@@ -23,7 +23,7 @@ export function InvoiceModal({
   const defaultFormState = {
     taxPayerId: taxPayer?.id || "",
     type: "received", // Default: Received
-    number: "",
+    invoiceNumber: "",
     taxableDate: getDefaultDate(),
     vatId: "",
     name: "",
@@ -38,11 +38,19 @@ export function InvoiceModal({
 
   useEffect(() => {
     if (show) {
-      setFormData(
-        invoice
-          ? { ...invoice }
-          : { ...defaultFormState, taxPayerId: taxPayer?.id },
-      );
+      if (invoice) {
+        const d = new Date(invoice.taxableDate);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const formattedDate = `${yyyy}-${mm}-${dd}`;
+        setFormData({
+          ...invoice,
+          taxableDate: formattedDate,
+        });
+      } else {
+        setFormData({ ...defaultFormState, taxPayerId: taxPayer?.id });
+      }
       setErrors({});
     }
   }, [show, invoice, taxPayer]);
@@ -65,7 +73,7 @@ export function InvoiceModal({
   const validate = () => {
     const newErrors = {};
     const req = "Required";
-    if (!formData.number) newErrors.number = req;
+    if (!formData.invoiceNumber) newErrors.invoiceNumber = req;
     if (!formData.type) newErrors.type = req;
     if (!formData.taxableDate) newErrors.taxableDate = req;
     if (!formData.vatId) newErrors.vatId = req;
@@ -212,9 +220,9 @@ export function InvoiceModal({
                 </label>
                 <input
                   type="text"
-                  name="number"
-                  className={`form-control ${errors.number ? "is-invalid" : ""}`}
-                  value={formData.number}
+                  name="invoiceNumber"
+                  className={`form-control ${errors.invoiceNumber ? "is-invalid" : ""}`}
+                  value={formData.invoiceNumber}
                   onChange={handleChange}
                 />
               </div>

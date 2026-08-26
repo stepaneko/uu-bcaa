@@ -38,8 +38,8 @@ export function InvoicesSection({
     return [...invoices].sort((a, b) => {
       if (a.type !== b.type) return a.type.localeCompare(b.type);
       if (a.taxableDate !== b.taxableDate)
-        return new Date(a.taxableDate) - new Date(b.taxableDate);
-      return a.number.localeCompare(b.number);
+        return new Date(b.taxableDate) - new Date(a.taxableDate);
+      return a.invoiceNumber.localeCompare(b.invoiceNumber);
     });
   }, [invoices]);
 
@@ -105,7 +105,7 @@ export function InvoicesSection({
                   <td>
                     {inv.type.charAt(0).toUpperCase() + inv.type.slice(1)}
                   </td>
-                  <td>{inv.number}</td>
+                  <td>{inv.invoiceNumber}</td>
                   <td>{formatDate(inv.taxableDate)}</td>
                   <td>{inv.vatId}</td>
                   <td>{inv.name}</td>

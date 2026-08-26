@@ -47,8 +47,8 @@ async function DeleteAbl(req, res) {
       });
     }
 
-    // ověříme si, zda faktura reálně existuje
-    const invoice = invoiceDao.get(reqParams.id);
+    // validate if the invoice being deleted really exists
+    const invoice = await invoiceDao.get(reqParams.id);
     if (!invoice) {
        return res.status(404).json({
          code: "invoiceNotFound",
@@ -57,7 +57,7 @@ async function DeleteAbl(req, res) {
     }
 
     // remove invoice from persistent storage
-    invoiceDao.remove(reqParams.id);
+    await invoiceDao.remove(reqParams.id);
 
     // return properly filled dtoOut
     res.json({});

@@ -1,203 +1,195 @@
-const fs = require("fs");
-const path = require("path");
 const crypto = require("crypto");
+const db = require("./db");
 
-const invoiceFolderPath = path.join(__dirname, "storage", "invoiceList");
-
-// if data storage directory does not exist, it is automatically created
-if (!fs.existsSync(invoiceFolderPath)) {
-  fs.mkdirSync(invoiceFolderPath, { recursive: true });
+// Transformation attribute names from DB notation to JS
+function mapToCamelCase(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    taxPayerId: row.tax_payer_id,
+    type: row.type,
+    invoiceNumber: row.invoice_number,
+    taxableDate: row.taxable_date,
+    vatId: row.vat_id,
+    name: row.name,
+    description: row.description,
+    price: row.price ? parseFloat(row.price) : 0, // NUMERIC z PG přijde jako string, parsujeme
+    vatValue: row.vat_value ? parseFloat(row.vat_value) : 0,
+    createdAt: row.created_at,
+    lastModifiedAt: row.last_modified_at,
+  };
 }
 
 // Duplicity check
-function isDuplicate(invoiceList, invoiceToCheck, ignoreId = null) {
-  return invoiceList.some((existingInvoice) => {
-    // Record being updated is ignored
-    if (ignoreId && existingInvoice.id === ignoreId) {
-      return false;
-    }
+async function isDuplicate(invoiceToCheck, ignoreId = null) {
+  let query = "";
+  const values = [invoiceToCheck.taxPayerId, invoiceToCheck.invoiceNumber];
 
-    if (invoiceToCheck.type === "issued" && existingInvoice.type === "issued") {
-      // issued invoice: taxPayerId and number must be unique
-      return (
-        existingInvoice.taxPayerId === invoiceToCheck.taxPayerId &&
-        existingInvoice.number === invoiceToCheck.number
-      );
-    } else if (
-      invoiceToCheck.type === "received" &&
-      existingInvoice.type === "received"
-    ) {
-      // received invoice: taxPayerId, number and vatId must be unique
-      return (
-        existingInvoice.taxPayerId === invoiceToCheck.taxPayerId &&
-        existingInvoice.number === invoiceToCheck.number &&
-        existingInvoice.vatId === invoiceToCheck.vatId
-      );
-    }
-    return false;
-  });
+  if (invoiceToCheck.type === "issued") {
+    query = `SELECT id FROM app_data.invoice WHERE type = 'issued' AND tax_payer_id = $1 AND invoice_number = $2`;
+  } else {
+    query = `SELECT id FROM app_data.invoice WHERE type = 'received' AND tax_payer_id = $1 AND invoice_number = $2 AND vat_id = $3`;
+    values.push(invoiceToCheck.vatId);
+  }
+
+  if (ignoreId) {
+    values.push(ignoreId);
+    query += ` AND id != $${values.length}`;
+  }
+
+  const result = await db.query(query, values);
+  return result.rowCount > 0;
 }
 
-// Read an invoice from a file
-function get(invoiceId) {
+// Read an invoice from database
+async function get(invoiceId) {
   try {
-    const filePath = path.join(invoiceFolderPath, `${invoiceId}.json`);
-    const fileData = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(fileData);
+    const result = await db.query(
+      "SELECT id, tax_payer_id, type, invoice_number, taxable_date, vat_id, name, description, price, vat_value FROM app_data.invoice WHERE id = $1",
+      [invoiceId],
+    );
+    return mapToCamelCase(result.rows[0]);
   } catch (error) {
-    if (error.code === "ENOENT") return null;
     throw { code: "failedToReadInvoice", message: error.message };
   }
 }
 
-// Write an invoice to a file
-function create(invoice) {
+// Write an invoice to database
+async function create(invoice) {
   try {
-    const { itemList: invoiceList } = list();
-
-    // Check duplicity before creation
-    if (isDuplicate(invoiceList, invoice)) {
+    const isDup = await isDuplicate(invoice);
+    if (isDup)
       throw {
         code: "duplicateInvoice",
         message: "Invoice with the given parameters already exists.",
         knownError: true,
       };
-    }
 
     invoice.id = crypto.randomBytes(16).toString("hex");
-    const filePath = path.join(invoiceFolderPath, `${invoice.id}.json`);
-    const fileData = JSON.stringify(invoice, null, 2);
-    fs.writeFileSync(filePath, fileData, "utf8");
-    return invoice;
+
+    const query = `
+      INSERT INTO app_data.invoice 
+      (id, tax_payer_id, type, invoice_number, taxable_date, vat_id, name, description, price, vat_value)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `;
+    const values = [
+      invoice.id,
+      invoice.taxPayerId,
+      invoice.type,
+      invoice.invoiceNumber,
+      invoice.taxableDate,
+      invoice.vatId,
+      invoice.name,
+      invoice.description,
+      invoice.price,
+      invoice.vatValue,
+    ];
+
+    const result = await db.query(query, values);
+    return mapToCamelCase(result.rows[0]);
   } catch (error) {
     if (error.knownError) throw error;
     throw { code: "failedToCreateInvoice", message: error.message };
   }
 }
 
-// Update invoice in a file
-function update(invoice) {
+// Update invoice in database
+async function update(invoice) {
   try {
-    const currentInvoice = get(invoice.id);
-    if (!currentInvoice) return null;
-
-    const newInvoice = { ...currentInvoice, ...invoice };
-    const { itemList: invoiceList } = list();
-
-    // Check duplicity before update
-    if (isDuplicate(invoiceList, newInvoice, invoice.id)) {
+    const isDup = await isDuplicate(invoice, invoice.id);
+    if (isDup)
       throw {
         code: "duplicateInvoice",
         message: "Invoice update would result in a duplicate.",
         knownError: true,
       };
-    }
 
-    const filePath = path.join(invoiceFolderPath, `${invoice.id}.json`);
-    const fileData = JSON.stringify(newInvoice, null, 2);
-    fs.writeFileSync(filePath, fileData, "utf8");
-    return newInvoice;
+    const query = `
+      UPDATE app_data.invoice 
+      SET tax_payer_id = $2, type = $3, invoice_number = $4, taxable_date = $5, vat_id = $6, name = $7, description = $8, price = $9, vat_value = $10, last_modified_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `;
+    const values = [
+      invoice.id,
+      invoice.taxPayerId,
+      invoice.type,
+      invoice.invoiceNumber,
+      invoice.taxableDate,
+      invoice.vatId,
+      invoice.name,
+      invoice.description,
+      invoice.price,
+      invoice.vatValue,
+    ];
+
+    const result = await db.query(query, values);
+    if (result.rowCount === 0) return null;
+    return mapToCamelCase(result.rows[0]);
   } catch (error) {
     if (error.knownError) throw error;
     throw { code: "failedToUpdateInvoice", message: error.message };
   }
 }
 
-// Remove an invoice from a file
-function remove(invoiceId) {
+// Remove an invoice from database
+async function remove(invoiceId) {
   try {
-    const filePath = path.join(invoiceFolderPath, `${invoiceId}.json`);
-    fs.unlinkSync(filePath);
+    await db.query("DELETE FROM app_data.invoice WHERE id = $1", [invoiceId]);
     return {};
   } catch (error) {
-    if (error.code === "ENOENT") return {};
     throw { code: "failedToRemoveInvoice", message: error.message };
   }
 }
 
-function list(options = {}) {
+async function list(options = {}) {
   try {
     const { limit, offset = 0, search, taxPayerId, month, year } = options;
+    let query =
+      "SELECT COUNT(*) OVER() as total_count, id, tax_payer_id, type, invoice_number, taxable_date, vat_id, name, description, price, vat_value FROM app_data.invoice WHERE 1=1";
+    const values = [];
 
-    const files = fs.readdirSync(invoiceFolderPath);
-
-    let invoiceList = files.map((file) => {
-      const fileData = fs.readFileSync(
-        path.join(invoiceFolderPath, file),
-        "utf8",
-      );
-      return JSON.parse(fileData);
-    });
-
-    // Filter by taxPayerId (if provided)
     if (taxPayerId) {
-      invoiceList = invoiceList.filter(
-        (invoice) => invoice.taxPayerId === taxPayerId,
-      );
+      values.push(taxPayerId);
+      query += ` AND tax_payer_id = $${values.length}`;
     }
 
-    // Filter by tax period (if provided)
     if (month && year) {
-      invoiceList = invoiceList.filter((invoice) => {
-        const date = new Date(invoice.taxableDate);
-        // getMonth() returns indices 0-11, therefore 1 is added
-        return (
-          date.getMonth() + 1 === parseInt(month, 10) &&
-          date.getFullYear() === parseInt(year, 10)
-        );
-      });
+      values.push(parseInt(month, 10), parseInt(year, 10));
+      query += ` AND EXTRACT(MONTH FROM taxable_date) = $${values.length - 1} AND EXTRACT(YEAR FROM taxable_date) = $${values.length}`;
     }
 
-    // Search applied (if provided)
     if (search) {
-      const searchLower = search.toLowerCase();
-      invoiceList = invoiceList.filter((invoice) => {
-        return (
-          (invoice.number &&
-            invoice.number.toLowerCase().includes(searchLower)) ||
-          (invoice.name && invoice.name.toLowerCase().includes(searchLower)) ||
-          (invoice.vatId &&
-            invoice.vatId.toLowerCase().includes(searchLower)) ||
-          (invoice.description &&
-            invoice.description.toLowerCase().includes(searchLower))
-        );
-      });
+      values.push(`%${search}%`);
+      const searchParam = `$${values.length}`;
+      query += ` AND (invoice_number ILIKE ${searchParam} OR name ILIKE ${searchParam} OR vat_id ILIKE ${searchParam} OR description ILIKE ${searchParam})`;
     }
 
-    // Sort result (from newest invoice to the oldest one)
-    invoiceList.sort(
-      (a, b) => new Date(b.taxableDate) - new Date(a.taxableDate),
-    );
+    query += " ORDER BY taxable_date DESC";
 
-    const totalItems = invoiceList.length;
+    if (limit) {
+      values.push(limit);
+      query += ` LIMIT $${values.length}`;
+    }
 
-    // Paging applied
-    const skip = parseInt(offset, 10);
+    values.push(offset);
+    query += ` OFFSET $${values.length}`;
+
+    const result = await db.query(query, values);
+    const invoiceList = result.rows.map(mapToCamelCase);
+
+    const totalItems =
+      result.rows.length > 0 ? parseInt(result.rows[0].total_count, 10) : 0;
     const take = limit ? parseInt(limit, 10) : totalItems;
-
-    if (skip > 0 || take < totalItems) {
-      invoiceList = invoiceList.slice(skip, skip + take);
-    }
-
     const totalPages = take > 0 ? Math.ceil(totalItems / take) : 1;
-    const currentPage = take > 0 ? Math.floor(skip / take) + 1 : 1;
+    const currentPage = take > 0 ? Math.floor(offset / take) + 1 : 1;
 
     return {
       itemList: invoiceList,
-      pageInfo: {
-        totalItems,
-        pageSize: take,
-        totalPages,
-        currentPage
-      },
+      pageInfo: { totalItems, pageSize: take, totalPages, currentPage },
     };
   } catch (error) {
-    if (error.code === "ENOENT") {
-      return { 
-        itemList: [], 
-        pageInfo: { totalItems: 0, pageSize: 0, totalPages: 0, currentPage: 0 } 
-      };
-    }
     throw { code: "failedToReadInvoices", message: error.message };
   }
 }

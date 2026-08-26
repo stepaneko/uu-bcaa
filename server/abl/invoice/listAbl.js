@@ -47,10 +47,10 @@ async function ListAbl(req, res) {
       });
     }
 
-    const { itemList, pageInfo } = invoiceDao.list(reqParams);
+    const { itemList, pageInfo } = await invoiceDao.list(reqParams);
 
     // Get tax payer map to display tax payer name in invoice data
-    const taxPayerMap = taxPayerDao.getTaxPayerMap();
+    const taxPayerMap = await taxPayerDao.getTaxPayerMap();
 
     res.status(200).json({ 
       itemList,

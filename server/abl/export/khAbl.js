@@ -58,7 +58,7 @@ async function ExportKhAbl(req, res) {
 
     const { taxPayerId, month, year } = reqParams;
 
-    const taxPayer = taxPayerDao.get(taxPayerId);
+    const taxPayer = await taxPayerDao.get(taxPayerId);
     if (!taxPayer) {
       return res.status(404).json({
         code: "taxPayerNotFound",
@@ -66,7 +66,7 @@ async function ExportKhAbl(req, res) {
       });
     }
 
-    const { itemList: invoiceList } = invoiceDao.list({
+    const { itemList: invoiceList } = await invoiceDao.list({
       taxPayerId,
       month,
       year,

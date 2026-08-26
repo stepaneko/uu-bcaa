@@ -48,7 +48,7 @@ async function DeleteAbl(req, res) {
       });
     }
 
-    const existingTaxPayer = taxPayerDao.get(reqParams.id);
+    const existingTaxPayer = await taxPayerDao.get(reqParams.id);
     if (!existingTaxPayer) {
       return res.status(404).json({
         code: "taxPayerNotFound",
@@ -57,7 +57,7 @@ async function DeleteAbl(req, res) {
     }
 
     // Referential integrity check: are there invoices assigned to this tax payer?
-    const { itemList: invoiceList } = invoiceDao.list({ taxPayerId: reqParams.id });
+    const { itemList: invoiceList } = await invoiceDao.list({ taxPayerId: reqParams.id });
     if (invoiceList && invoiceList.length > 0) {
       return res.status(400).json({
         code: "taxPayerHasInvoices",
@@ -65,7 +65,7 @@ async function DeleteAbl(req, res) {
       });
     }
 
-    taxPayerDao.remove(reqParams.id);
+    await taxPayerDao.remove(reqParams.id);
 
     res.status(200).json({});
   } catch (error) {

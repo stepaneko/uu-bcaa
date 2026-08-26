@@ -46,7 +46,7 @@ async function GetAbl(req, res) {
       });
     }
 
-    const taxPayer = taxPayerDao.get(reqParams.id);
+    const taxPayer = await taxPayerDao.get(reqParams.id);
     if (!taxPayer) {
       return res.status(404).json({
         code: "taxPayerNotFound",

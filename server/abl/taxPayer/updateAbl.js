@@ -50,7 +50,7 @@ async function UpdateAbl(req, res) {
       });
     }
 
-    const existingTaxPayer = taxPayerDao.get(reqParams.id);
+    const existingTaxPayer = await taxPayerDao.get(reqParams.id);
     if (!existingTaxPayer) {
       return res.status(404).json({
         code: "taxPayerNotFound",
@@ -61,7 +61,7 @@ async function UpdateAbl(req, res) {
     // Remove whitespace characters
     if (reqParams.vatId) reqParams.vatId = reqParams.vatId.trim();
 
-    const updatedTaxPayer = taxPayerDao.update(reqParams);
+    const updatedTaxPayer = await taxPayerDao.update(reqParams);
 
     if (!updatedTaxPayer) {
       return res.status(404).json({

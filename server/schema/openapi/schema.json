@@ -741,7 +741,7 @@
         "required": [
           "taxPayerId",
           "type",
-          "number",
+          "invoiceNumber",
           "vatId",
           "name",
           "taxableDate",
@@ -763,7 +763,7 @@
               "received"
             ]
           },
-          "number": {
+          "invoiceNumber": {
             "type": "string"
           },
           "vatId": {

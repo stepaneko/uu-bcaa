@@ -27,7 +27,7 @@ async function CreateAbl(req, res) {
     // Remove whitespace characters
     if (reqParams.vatId) reqParams.vatId = reqParams.vatId.trim();
 
-    const taxPayer = taxPayerDao.create(reqParams);
+    const taxPayer = await taxPayerDao.create(reqParams);
     res.status(201).json(taxPayer);
   } catch (error) {
     console.error(error);

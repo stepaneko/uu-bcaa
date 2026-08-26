@@ -26,7 +26,7 @@ async function CreateAbl(req, res) {
     }
 
     // check if taxPayerId exists
-    const taxPayer = taxPayerDao.get(reqParams.taxPayerId);
+    const taxPayer = await taxPayerDao.get(reqParams.taxPayerId);
     if (!taxPayer) {
       return res.status(400).json({
         code: "taxPayerDoesNotExist",
@@ -35,7 +35,7 @@ async function CreateAbl(req, res) {
     }
 
     // store invoice to persistent storage
-    const invoice = invoiceDao.create(reqParams);
+    const invoice = await invoiceDao.create(reqParams);
     invoice.taxPayer = taxPayer; // Add tax payer data to the response
 
     // return properly filled output

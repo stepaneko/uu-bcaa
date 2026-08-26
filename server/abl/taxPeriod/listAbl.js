@@ -48,7 +48,7 @@ async function ListAbl(req, res) {
 
     const { taxPayerId, limit, offset = 0, search } = reqParams;
 
-    const { itemList: invoiceList } = invoiceDao.list({taxPayerId});
+    const { itemList: invoiceList } = await invoiceDao.list({taxPayerId});
     const taxPeriodsMap = {};
 
     invoiceList.forEach(invoice => {

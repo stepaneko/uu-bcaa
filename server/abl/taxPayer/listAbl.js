@@ -46,7 +46,7 @@ async function ListAbl(req, res) {
       });
     }
 
-    const { itemList, pageInfo } = taxPayerDao.list(reqParams);
+    const { itemList, pageInfo } = await taxPayerDao.list(reqParams);
 
     res.status(200).json({ 
       itemList,

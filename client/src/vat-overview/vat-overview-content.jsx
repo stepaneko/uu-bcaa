@@ -103,7 +103,7 @@ export default function VatOverviewContent() {
             <DeleteConfirmModal 
                 show={!!deleteInvoiceData}
                 title="Delete invoice"
-                message={`Are you sure you want to delete invoice ${deleteInvoiceData?.number || ''}?`}
+                message={`Are you sure you want to delete invoice ${deleteInvoiceData?.invoiceNumber || ''}?`}
                 onClose={() => setDeleteInvoiceData(null)}
                 onConfirm={handleExecuteDeleteInvoice}
             />
